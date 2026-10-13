@@ -1,0 +1,30 @@
+'use client';
+import {useCallback,useEffect,useRef,useState} from 'react';
+import Link from 'next/link';
+import {useParams} from 'next/navigation';
+import DocumentPreview from '@/components/DocumentPreview';
+
+type SavedRecord={note?:string;editedContent?:string};
+export default function DocumentPage(){
+ const params=useParams<{id:string}>(); const id=params.id;
+ const [d,setD]=useState<any>(null),[note,setNote]=useState(''),[editedContent,setEditedContent]=useState(''),[status,setStatus]=useState(''),[editing,setEditing]=useState(false),[configured,setConfigured]=useState<boolean|null>(null),[hydrated,setHydrated]=useState(false);
+ const timer=useRef<ReturnType<typeof setTimeout>|null>(null); const lastServerPayload=useRef('');
+ const localKey=`smartlab-qms-record-v2:${id}`;
+ useEffect(()=>{let alive=true;setHydrated(false);fetch('/api/documents',{cache:'no-store'}).then(r=>r.json()).then(async(xs)=>{const x=xs.find((v:any)=>v.id===id);if(!alive)return;setD(x);if(!x){setHydrated(true);return;}let local:SavedRecord={};try{local=JSON.parse(localStorage.getItem(`smartlab-qms-record-v2:${id}`)||'{}')}catch{}
+   try{const r=await fetch('/api/records?document_id='+encodeURIComponent(x.id),{cache:'no-store'});const v=await r.json();if(!alive)return;setConfigured(!!v.configured);const remote=(v.data?.data||{}) as SavedRecord;const useRemote=!!(remote.note||remote.editedContent);const chosen=useRemote?remote:local;setNote(chosen.note||'');setEditedContent(chosen.editedContent||'');lastServerPayload.current=useRemote?JSON.stringify({note:chosen.note||'',editedContent:chosen.editedContent||''}):'';if(useRemote)localStorage.setItem(`smartlab-qms-record-v2:${id}`,JSON.stringify(chosen));else if(local.note||local.editedContent)setStatus('Đã khôi phục bản lưu tự động trên trình duyệt.');
+   }catch{if(!alive)return;setConfigured(false);setNote(local.note||'');setEditedContent(local.editedContent||'');setStatus('Đã khôi phục bản lưu tự động trên trình duyệt.');}finally{if(alive)setHydrated(true);}
+  }).catch(()=>{if(alive){setStatus('Không tải được danh mục tài liệu.');setHydrated(true)}});return()=>{alive=false;if(timer.current)clearTimeout(timer.current)};},[id]);
+ const onContentChange=useCallback((value:string)=>setEditedContent(value),[]);
+ const persist=useCallback(async(manual=false)=>{if(!d||!hydrated)return;const payload={note,editedContent};const serialized=JSON.stringify(payload);try{localStorage.setItem(localKey,serialized);}catch{}
+  if(configured===true){if(serialized===lastServerPayload.current){setStatus('Đã tự động lưu');return;}try{const r=await fetch('/api/records',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({document_id:d.id,data:payload,user_id:'anonymous'})});if(r.ok){lastServerPayload.current=serialized;setStatus(manual?'Đã lưu vào hệ thống và trình duyệt.':'Đã tự động lưu vào hệ thống.');if(manual)setEditing(false);}else{const v=await r.json().catch(()=>null);setStatus('Đã lưu trên trình duyệt; lưu máy chủ lỗi: '+(v?.error||'hãy kiểm tra Supabase'));}}catch{setStatus('Đã lưu trên trình duyệt; chưa kết nối được máy chủ.');}
+  }else{setStatus('Đã tự động lưu trên trình duyệt này. Cấu hình Supabase để đồng bộ giữa thiết bị.');if(manual)setEditing(false);}
+ },[d,hydrated,note,editedContent,configured,localKey]);
+ useEffect(()=>{if(!hydrated||!d)return;if(timer.current)clearTimeout(timer.current);setStatus('Có thay đổi chưa lưu…');timer.current=setTimeout(()=>{void persist(false)},900);return()=>{if(timer.current)clearTimeout(timer.current)};},[note,editedContent,hydrated,d,persist]);
+ const save=async()=>{if(timer.current)clearTimeout(timer.current);await persist(true)};
+ if(!d)return <main className="main"><div className="empty-state">Đang tải tài liệu…</div></main>;
+ const directEditable=['DOCX','XLSX'].includes(d.ext);
+ return <main className="main document-detail"><div className="viewer"><div className="viewer-head"><div><strong>{d.title}</strong><div className="meta">{d.chapter}{d.category?' · '+d.category:''} · {d.ext}</div></div><div className="actions"><Link className="btn" href="/#library">← Danh mục</Link>{directEditable&&<button className="btn primary" type="button" onClick={()=>{setEditing(v=>!v);setStatus(editing?'Đã thoát chế độ chỉnh sửa.':'Chế độ chỉnh sửa đang bật — bấm vào nội dung để sửa.')}}>{editing?'Kết thúc chỉnh sửa':'✎ Chỉnh sửa trực tiếp'}</button>}<a className="btn primary" href={d.path} download>Tải bản gốc ↓</a></div></div>
+ {directEditable&&<div className={'edit-banner '+(editing?'editing':'')}>{editing?'ĐANG CHỈNH SỬA · Có thể sửa chữ, bảng, kéo mép ô để đổi độ rộng cột/chiều cao hàng.':'Chế độ xem · Nhấn “Chỉnh sửa trực tiếp” để sửa nội dung Word/Excel.'}<span>{status||'Lưu tự động đang bật'} · Tệp gốc không bị ghi đè.</span></div>}
+ <DocumentPreview src={d.path} ext={d.ext} title={d.title} counterpart={d.counterpart} editable={editing} savedContent={editedContent} onContentChange={onContentChange}/>
+ <div className="form-panel"><h3>{d.ext==='PDF'?'Dữ liệu chỉnh sửa / ghi nhận PDF':'Ghi chú và lưu chỉnh sửa'}</h3><p className="meta">{configured===false?'Tự động lưu cục bộ trên trình duyệt; để lưu lâu dài và đồng bộ giữa máy, cấu hình Supabase trong .env.local.':'Thay đổi được tự động lưu sau khi ngừng nhập khoảng 1 giây.'} {d.ext==='PDF'?'PDF gốc được giữ nguyên; nội dung bổ sung được lưu tại hồ sơ.':''}</p>{d.ext==='PDF'&&<div className="field"><label>Nội dung chỉnh sửa / dữ liệu cần ghi nhận</label><textarea rows={7} value={editedContent} onChange={e=>setEditedContent(e.target.value)} placeholder="Nhập dữ liệu, nội dung đã chỉnh sửa hoặc ghi nhận liên quan đến PDF…"/></div>}<div className="field"><label>Ghi chú / dữ liệu hồ sơ</label><textarea rows={4} value={note} onChange={e=>setNote(e.target.value)} placeholder="Nhập ghi chú cho hồ sơ này…"/></div><div className="edit-save-row"><button className="btn primary" type="button" onClick={save}>Lưu ngay</button><span className="save" role="status">{status||'Tự động lưu đang bật'}</span></div></div></div></main>
+}
