@@ -6,3 +6,6 @@ node_modules
 
 .env.local
 .env.*.local
+
+# Local autosave records (QMS)
+.data
