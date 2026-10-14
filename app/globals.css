@@ -196,3 +196,9 @@ body.sb-resizing iframe{pointer-events:none}
   .preview-content section{box-shadow:none!important;margin:0 auto!important}
   .sheet-body{max-height:none!important;overflow:visible!important;border:0!important}
 }
+
+/* Fix "cannot type in table cells": docx-preview sets `.docx-preview span{min-height:11pt}`, which inflated the
+   row-resize handle (~15px tall) and covered the middle of small cells, so clicks never placed the caret. */
+.preview-content .row-resize-handle,.preview-content .cell-resize-handle{min-height:0!important;line-height:0;font-size:0}
+.preview-content .row-resize-handle{height:5px!important;bottom:-2px}
+.preview-content .cell-resize-handle{width:5px!important}
