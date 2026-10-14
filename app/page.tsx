@@ -8,7 +8,7 @@ const Icon=({name}:{name:string})=>{const paths:Record<string,string>={shield:'M
 export default function Home(){
  const [docs,setDocs]=useState<Doc[]>([]),[q,setQ]=useState(''),[chapter,setChapter]=useState(''),[selectedGroup,setSelectedGroup]=useState(''),[loading,setLoading]=useState(true),[error,setError]=useState('');
  useEffect(()=>{let active=true;fetch('/api/documents',{cache:'no-store'}).then(async r=>{if(!r.ok)throw new Error('Không thể tải danh mục tài liệu.');return r.json()}).then(data=>{if(active)setDocs(Array.isArray(data)?data:[])}).catch(e=>{if(active)setError(e.message||'Lỗi tải dữ liệu')}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[]);
- const chapters=useMemo(()=>Array.from(new Set(docs.map(d=>d.chapter))),[docs]);
+ const chapters=useMemo(()=>{const num=(c:string)=>{const m=c.match(/^\s*(\d+)\s*\./);return m?parseInt(m[1],10):Number.POSITIVE_INFINITY};return Array.from(new Set(docs.map(d=>d.chapter))).sort((a,b)=>{const na=num(a),nb=num(b);if(na!==nb)return na<nb?-1:1;return a.localeCompare(b,'vi',{numeric:true})})},[docs]);
  const filtered=useMemo(()=>docs.filter(d=>(!chapter||d.chapter===chapter)&&(!q||`${d.title} ${d.path} ${d.category} ${d.chapter}`.toLowerCase().includes(q.toLowerCase()))),[docs,chapter,q]);
  const countExt=(ext:string)=>docs.filter(d=>d.ext===ext).length;
  const chooseChapter=(value:string)=>{setChapter(value);setSelectedGroup('');setQ('');if(value){window.setTimeout(()=>document.getElementById('library')?.scrollIntoView({behavior:'smooth',block:'start'}),50)}else{window.scrollTo({top:0,behavior:'smooth'})}};

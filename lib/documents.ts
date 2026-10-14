@@ -7,18 +7,22 @@ const exts = new Set(['.docx','.pdf','.xlsx','.jpg','.jpeg','.png']);
 // Decode filenames that were escaped as #UXXXX after a CP437/UTF-8 ZIP-name mismatch.
 const CP437_HIGH = 'ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ ';
 function decodeLegacy(s:string):string {
-  if (!/#U[0-9a-f]{4}/i.test(s)) return s;
+  if (!/#U[0-9a-f]{4}/i.test(s)) return s.normalize('NFC');
   const escaped=s.replace(/#U([0-9a-f]{4})/ig,(_,hex:string)=>String.fromCharCode(parseInt(hex,16)));
-  const bytes:number[]=[];
+  // Only treat the text as CP437 mojibake when EVERY non-ASCII char is a CP437 char AND the resulting
+  // bytes form valid UTF-8. Otherwise the escapes are already real Unicode (e.g. ì, à, á, é, ế) and must be kept as-is.
+  const bytes:number[]=[]; let ok=true, high=false;
   for(const ch of escaped){
     const code=ch.charCodeAt(0);
     if(code<128){bytes.push(code);continue;}
-    const idx=CP437_HIGH.indexOf(ch);
-    if(idx>=0){bytes.push(idx+128);continue;}
-    // Keep genuine Unicode characters intact if they are not part of the legacy CP437 sequence.
-    const encoded=Buffer.from(ch,'utf8'); for(const b of encoded) bytes.push(b);
+    high=true; const idx=CP437_HIGH.indexOf(ch);
+    if(idx<0){ok=false;break;}
+    bytes.push(idx+128);
   }
-  try { return Buffer.from(bytes).toString('utf8').replace(/�/g,''); } catch { return escaped; }
+  if(ok&&high){
+    try { return new TextDecoder('utf-8',{fatal:true}).decode(Uint8Array.from(bytes)).normalize('NFC'); } catch { /* not mojibake */ }
+  }
+  return escaped.normalize('NFC');
 }
 const human = (s:string) => decodeLegacy(s).replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim();
 export function getDocuments():Doc[]{
@@ -37,5 +41,5 @@ export function getDocuments():Doc[]{
       }
     }
   }
-  walk(root,''); return out.sort((a,b)=>a.path.localeCompare(b.path,'vi'));
+  walk(root,''); return out.sort((a,b)=>a.path.localeCompare(b.path,'vi',{numeric:true}));
 }
