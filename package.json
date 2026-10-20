@@ -3,15 +3,23 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/qms-data.mjs auto",
     "dev": "next dev",
+    "prebuild": "node scripts/qms-data.mjs auto",
     "build": "next build",
+    "prestart": "node scripts/qms-data.mjs auto",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "data:status": "node scripts/qms-data.mjs status",
+    "data:list": "node scripts/qms-data.mjs list",
+    "data:restore": "node scripts/qms-data.mjs restore",
+    "add-file": "node scripts/qms-data.mjs add-file"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
     "docx-preview": "^0.3.7",
     "next": "^15.5.0",
+    "openai": "^7.34.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "xlsx": "^0.18.5"
