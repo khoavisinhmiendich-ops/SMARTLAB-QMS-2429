@@ -19,13 +19,13 @@ export function lockState(key:string):{locked:boolean;retryAfter:number}{
   if(b&&b.lockedUntil>now)return {locked:true,retryAfter:Math.ceil((b.lockedUntil-now)/1000)};
   return {locked:false,retryAfter:0};
 }
-export function recordFail(key:string):{locked:boolean;retryAfter:number;remaining:number}{
+export function recordFail(key:string,max=MAX_FAILS):{locked:boolean;retryAfter:number;remaining:number}{
   const now=Date.now();const b=buckets.get(key)??{fails:[],lockedUntil:0};
   b.fails=b.fails.filter(t=>now-t<WINDOW_MS);b.fails.push(now);
-  if(b.fails.length>=MAX_FAILS){b.lockedUntil=now+LOCK_MS;b.fails=[];}
+  if(b.fails.length>=max){b.lockedUntil=now+LOCK_MS;b.fails=[];}
   buckets.set(key,b);
   const locked=b.lockedUntil>now;
-  return {locked,retryAfter:locked?Math.ceil((b.lockedUntil-now)/1000):0,remaining:Math.max(0,MAX_FAILS-b.fails.length)};
+  return {locked,retryAfter:locked?Math.ceil((b.lockedUntil-now)/1000):0,remaining:Math.max(0,max-b.fails.length)};
 }
 export function recordSuccess(key:string){buckets.delete(key);}
 export const waitText=(s:number)=>s>=60?`${Math.ceil(s/60)} phút`:`${s} giây`;
@@ -41,3 +41,7 @@ export async function auditLog(kind:'security'|'data',event:string,detail:Record
     await fs.appendFile(file,line+'\n','utf8');
   }catch{}
 }
+// Giới hạn toàn cục (không phụ thuộc IP): chặn kẻ tấn công đổi tiêu đề X-Forwarded-For để né giới hạn theo IP.
+export const GLOBAL_MAX_FAILS=30;
+export const globalLock=(scope:string)=>lockState('global:'+scope);
+export const globalFail=(scope:string)=>recordFail('global:'+scope,GLOBAL_MAX_FAILS);

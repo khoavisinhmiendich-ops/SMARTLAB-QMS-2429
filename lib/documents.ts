@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {idFromRel,normalizeRel} from './docId';
 
 export type Doc = { id:string; title:string; path:string; chapter:string; category:string; ext:string; size:number; updatedAt:string; counterpart?:string; replacedAt?:number };
 const root = path.join(process.cwd(),'public','2429.2026');
@@ -44,7 +45,7 @@ export function getDocuments(replaced:Record<string,number>={}):Doc[]{
         const siblingExt=ext==='DOCX'?'.pdf':ext==='PDF'?'.docx':null;
         const sibling=siblingExt?path.join(dir,path.basename(e.name,path.extname(e.name))+siblingExt):'';
         const counterpart=sibling&&fs.existsSync(sibling)?'/2429.2026/'+path.relative(root,sibling).split(path.sep).map(encodeURIComponent).join('/'):undefined;
-        out.push({id:Buffer.from(r).toString('base64url'),title:human(path.basename(e.name,path.extname(e.name))),path:'/2429.2026/'+r.split(path.sep).map(encodeURIComponent).join('/'),chapter,category,ext,size:st.size,updatedAt:st.mtime.toISOString(),counterpart,replacedAt:replaced[r.split(path.sep).join('/')]||undefined});
+        out.push({id:idFromRel(r),title:human(path.basename(e.name,path.extname(e.name))),path:'/2429.2026/'+r.split(path.sep).map(encodeURIComponent).join('/'),chapter,category,ext,size:st.size,updatedAt:st.mtime.toISOString(),counterpart,replacedAt:replaced[normalizeRel(r)]||undefined});
       }
     }
   }

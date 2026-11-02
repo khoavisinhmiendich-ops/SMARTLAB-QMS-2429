@@ -35,7 +35,7 @@ function sync(){
     if(!best)continue;
     if(!p||String(best.updated_at)>String(p.updated_at)){
       if(p)try{keepHistory(backups[1],key,fs.readFileSync(pf,'utf8'),p)}catch{}
-      fs.writeFileSync(pf,JSON.stringify({document_id:best.document_id,user_id:best.user_id,data:best.data,updated_at:best.updated_at}));res.toPrimary++;p=best;
+      fs.writeFileSync(pf,JSON.stringify({document_id:best.document_id,user_id:best.user_id,data:best.data,updated_at:best.updated_at,...(best.version?{version:best.version}:{})}));res.toPrimary++;p=best;
     }
     for(const b of backups)try{
       const lf=path.join(b,'latest',key+'.json');const prevText=fs.existsSync(lf)?fs.readFileSync(lf,'utf8'):'';const prev=prevText?readJson(lf):null;
@@ -43,7 +43,7 @@ function sync(){
       if(prev)keepHistory(b,key,prevText,prev);
       fs.mkdirSync(path.dirname(lf),{recursive:true});
       let rel;try{const s=Buffer.from(p.document_id,'base64url').toString('utf8');rel=/[\\/]/.test(s)?s:undefined}catch{}
-      fs.writeFileSync(lf,JSON.stringify({document_id:p.document_id,user_id:p.user_id,data:p.data,updated_at:p.updated_at,path:rel}));res.toBackup++;
+      fs.writeFileSync(lf,JSON.stringify({document_id:p.document_id,user_id:p.user_id,data:p.data,updated_at:p.updated_at,path:rel,...(p.version?{version:p.version}:{})}));res.toBackup++;
     }catch{}
   }
   return res;

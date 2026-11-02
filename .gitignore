@@ -9,3 +9,9 @@ node_modules
 
 # Local autosave records (QMS)
 .data
+
+# TypeScript build cache
+tsconfig.tsbuildinfo
+# Logs
+*.log
+

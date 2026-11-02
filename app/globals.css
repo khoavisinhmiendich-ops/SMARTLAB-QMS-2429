@@ -210,3 +210,42 @@ body.sb-resizing iframe{pointer-events:none}
 .upl-card{text-align:left;width:min(100%,460px)}.upl-card h3{text-align:center}.upl-card .gate-desc{text-align:center}.upl-label{display:block;margin:12px 0 6px;font-size:13px;font-weight:700;color:#31536a}.upl-file{width:100%;padding:9px;border:1px dashed #b9d0dc;border-radius:10px;background:#f8fbfd;font-size:13px}.upl-results{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px;max-height:170px;overflow:auto}.upl-results li{display:grid;gap:2px;padding:8px 10px;border-radius:8px;font-size:12px;line-height:1.4}.upl-results b{word-break:break-all}.upl-replaced,.upl-added{background:#eefaf4;border:1px solid #c7ead8;color:#1f7a55}.upl-error{background:#fff4f4;border:1px solid #f2c8c8;color:#a23e3e}
 
 .office-color-pick{position:relative;display:inline-flex;align-items:center;gap:5px;cursor:pointer}.office-color-pick input{width:22px;height:18px;padding:0;border:0;background:none;cursor:pointer}.office-color-pick input:disabled{cursor:not-allowed}.upl-drop{border-radius:12px}.upl-drop.over .upl-file{border-color:#078b94;background:#eefbfa}
+/* Hình vẽ tự chèn: kích thước chỉnh bằng tay nắm riêng (lib/shapeHandles.ts), tắt tay kéo mặc định của trình duyệt. */
+.preview-content [data-qms-shape="true"]{resize:none !important;}
+
+/* Nút ✥ cũ trong hình đã lưu: thay bằng tay nắm di chuyển của khung chỉnh hình */
+.preview-content [data-qms-shape="true"] [data-qms-drag]{display:none !important;}
+.preview-content img{max-width:none;}
+
+/* Tắt gạch đỏ kiểm tra chính tả của trình duyệt trong Word/Excel */
+.preview-content,.preview-content *{-webkit-text-decoration-skip-ink:auto}
+.preview-content *::spelling-error{text-decoration:none!important}
+.preview-content *::grammar-error{text-decoration:none!important}
+
+/* ===== Thông báo đồng bộ (IndexedDB / Supabase / mạng) ===== */
+.sync-banner{position:fixed;left:16px;bottom:16px;z-index:80;max-width:min(560px,calc(100vw - 32px));display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;padding:12px 14px;border-radius:12px;border:1px solid #cfe0ea;background:#fff;box-shadow:0 14px 38px #102d4630;font-size:12.5px;line-height:1.45;color:var(--ink)}
+.sync-banner-main{display:flex;flex-direction:column;gap:3px;min-width:200px;flex:1}
+.sync-banner-main small{color:#52687d;font-size:11.5px}
+.sync-banner-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.sync-banner-actions .btn{height:32px;font-size:11px}
+.sync-banner.warn{border-color:#f0c36b;background:#fff8e6}
+.sync-banner.error{border-color:#e9a3a3;background:#fff1f1}
+.sync-banner.conflict{border-color:#b9a6e8;background:#f5f1ff}
+.sync-banner.ok{border-color:#9fd6b6;background:#effaf3}
+.sync-banner.info{border-color:#a9cde3;background:#eef7fc}
+
+/* ===== Trang Sao lưu & Đồng bộ ===== */
+.backup-page{max-width:1080px;margin:0 auto;padding:22px 18px 90px}
+.backup-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px;box-shadow:0 6px 22px #102d4610}
+.backup-card h3{margin:0 0 10px;font-size:15px;color:var(--navy)}
+.backup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px 24px;font-size:13px}
+.backup-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 6px}
+.backup-note{background:#fff8e6;border:1px solid #f0c36b;border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.5;margin-bottom:12px}
+.backup-card code,.backup-note code{background:#eef3f8;padding:1px 5px;border-radius:5px;font-size:11.5px}
+.backup-table{overflow:auto;max-height:360px;margin-top:10px;border:1px solid var(--line);border-radius:10px}
+.backup-table table{border-collapse:collapse;width:100%;font-size:12px}
+.backup-table th,.backup-table td{padding:6px 10px;border-bottom:1px solid #edf2f7;text-align:left;white-space:nowrap}
+.backup-table td:nth-child(2){white-space:normal;word-break:break-all}
+.backup-log{font-size:12px;line-height:1.6;max-height:220px;overflow:auto;color:#33495d}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#b9c6d2;margin-right:6px}
+.dot.ok{background:#1f9d57}.dot.bad{background:#d93025}

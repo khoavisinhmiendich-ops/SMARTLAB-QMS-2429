@@ -4,6 +4,7 @@ import path from 'node:path';
 import {isGatedName} from '@/lib/gate';
 import {hasGate,relFromDocumentId} from '@/lib/gateServer';
 import {normFileName} from '@/lib/filename';
+import {normalizeRel} from '@/lib/docId';
 import {archiveReplacedFile,markReplaced} from '@/lib/backup';
 import {auditLog,clientIp} from '@/lib/security';
 export const runtime='nodejs';
@@ -26,6 +27,14 @@ async function findByName(dir:string,rel:string,target:string,out:{abs:string;re
     else if(normFileName(e.name)===target)out.push({abs,rel:r});
   }
 }
+async function findExact(dir:string,rel:string,target:string):Promise<string|null>{
+  for(const e of await fs.readdir(dir,{withFileTypes:true})){
+    const abs=path.join(dir,e.name),r=rel?rel+'/'+e.name:e.name;
+    if(e.isDirectory()){const f=await findExact(abs,r,target);if(f)return f;}
+    else if(normalizeRel(r)===target)return abs;
+  }
+  return null;
+}
 async function writeAtomic(dest:string,buf:Buffer){
   const tmp=dest+'.'+process.pid+'.'+Date.now()+'.tmp';
   await fs.writeFile(tmp,buf);await fs.rename(tmp,dest);
@@ -42,7 +51,7 @@ export async function POST(req:NextRequest){
   // Chế độ "Thay tệp đang mở": thay đúng tệp được chỉ định, bất kể tên tệp mới là gì (phải cùng định dạng).
   if(targetId){
     const rel=relFromDocumentId(targetId).split(/[\\/]/).join('/');
-    const abs=path.resolve(root,rel);
+    let abs=path.resolve(root,rel);
     if(!rel||!abs.startsWith(root+path.sep))return NextResponse.json({error:'Tài liệu cần thay không hợp lệ.'},{status:400});
     if(files.length!==1)return NextResponse.json({error:'Chỉ chọn 1 tệp để thay.'},{status:400});
     if(rel.split('/').some(isGatedName)&&!gated)return NextResponse.json({error:'Thư mục được bảo vệ bằng passkey. Hãy nhập passkey trước.'},{status:403});
@@ -52,7 +61,12 @@ export async function POST(req:NextRequest){
     if(f.size>MAX)return NextResponse.json({error:'Tệp vượt quá 50 MB.'},{status:400});
     const buf=Buffer.from(await f.arrayBuffer());
     if(!signatureOk(ext,buf))return NextResponse.json({error:'Nội dung tệp không đúng định dạng '+ext+'.'},{status:400});
-    try{await fs.access(abs);}catch{return NextResponse.json({error:'Không tìm thấy tệp cũ để thay.'},{status:404});}
+    try{await fs.access(abs);}catch{
+      // Mã tài liệu dùng tên đã chuẩn hóa (NFC, "/"); trên đĩa tên có thể ở dạng khác (vd. NFD từ macOS): tìm lại đúng tệp theo tên chuẩn hóa.
+      const hit=await findExact(root,'',normalizeRel(rel));
+      if(!hit)return NextResponse.json({error:'Không tìm thấy tệp cũ để thay.'},{status:404});
+      abs=hit;
+    }
     try{
       await archiveReplacedFile(abs,rel);await writeAtomic(abs,buf);await markReplaced(rel);
       await auditLog('data','file_replaced',{rel,size:buf.length,ip,mode:'target'});
