@@ -21,6 +21,7 @@ export async function middleware(req:NextRequest){
  if(p==='/api/drive/cron'&&process.env.CRON_SECRET&&(req.headers.get('authorization')||'')==='Bearer '+process.env.CRON_SECRET)return NextResponse.next();
  // Google chuyển hướng về đây từ trang khác (cookie đăng nhập SameSite=Strict không được gửi kèm): route tự xác thực bằng chuỗi state đã ký (15 phút), không có state hợp lệ thì không làm gì.
  if(p==='/api/drive/callback'&&req.nextUrl.searchParams.has('state'))return NextResponse.next();
+ if(p==='/privacy.html')return NextResponse.next();
  if(p==='/login'||p==='/api/auth/login'||p==='/api/auth/logout'||p.startsWith('/_next/')||p==='/favicon.ico'||p==='/robots.txt')return NextResponse.next();
  if(await validSession(req.cookies.get('qms_session')?.value,process.env.QMS_AUTH_SECRET)){
   if(needsGate(p)&&!(await validSession(req.cookies.get(GATE_COOKIE)?.value,process.env.QMS_AUTH_SECRET,'bm.'))){
