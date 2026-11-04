@@ -152,6 +152,15 @@ export async function uploadJson(name: string, obj: unknown, props: Record<strin
   const j: any = await r.json();
   return { id: String(j.id), md5: String(j.md5Checksum || ''), size: Number(j.size) || bytes.length, localMd5: crypto.createHash('md5').update(bytes).digest('hex') };
 }
+// Bản XEM ĐƯỢC: chuyển HTML của tài liệu thành Google Docs (mở trên Drive thấy bảng biểu, định dạng như tài liệu thật, không phải chuỗi JSON).
+export async function uploadHtmlAsDoc(name: string, html: string, props: Record<string, string>, folderId: string): Promise<{ id: string }> {
+  const bytes = Buffer.from(html, 'utf8'); const b = 'qms' + crypto.randomBytes(8).toString('hex');
+  const meta = JSON.stringify({ name, parents: [folderId], mimeType: 'application/vnd.google-apps.document', appProperties: props });
+  const body = Buffer.concat([Buffer.from('--' + b + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + meta + '\r\n--' + b + '\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n', 'utf8'), bytes, Buffer.from('\r\n--' + b + '--', 'utf8')]);
+  const r = await dfetch(UPLOAD + '/files?uploadType=multipart&fields=id', { method: 'POST', headers: { 'content-type': 'multipart/related; boundary=' + b }, body }, 180000);
+  const j: any = await r.json();
+  return { id: String(j.id) };
+}
 export async function downloadText(fileId: string): Promise<string> {
   const r = await dfetch(API + '/files/' + encodeURIComponent(fileId) + '?alt=media', {}, 120000);
   return await r.text();
