@@ -1,7 +1,9 @@
 import crypto from 'node:crypto';
 import { supabase, explainSupabaseError } from './storage';
-import { DriveError, driveEnv, ensureFolder, uploadJson, uploadHtmlAsDoc, downloadText, listFiles, writeState, type DriveFile } from './drive';
-import { canonicalId, idVariants } from './docId';
+import { DriveError, driveEnv, ensureFolder, uploadJson, uploadHtmlAsDoc, uploadFile, downloadText, listFiles, writeState, type DriveFile } from './drive';
+import { canonicalId, idVariants, relFromId } from './docId';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { auditLog } from './security';
 // Lưu trữ hai chiều Supabase <-> Google Drive:
 //  - "due": bản ghi không được sửa quá N ngày (mặc định 60) được chép lên Drive, kiểm tra toàn vẹn (MD5), rồi thay nội dung trong Supabase
@@ -32,12 +34,30 @@ const escHtml = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 // Tạo thêm bản Google Docs đọc được cạnh tệp JSON. Lỗi ở bước này KHÔNG ảnh hưởng sao lưu chính.
 async function viewCopy(row: Row, ver: number, folder: string): Promise<void> {
   try {
-    const html = typeof row.data?.editedContent === 'string' ? row.data.editedContent : '';
+    let html = typeof row.data?.editedContent === 'string' ? row.data.editedContent : '';
+    if (html.trim().startsWith('{')) { // Excel: {"v":2,"sheets":{"<tên sheet>":"<html>"}} -> mỗi sheet một phần, không in chuỗi JSON thô
+      try { const o = JSON.parse(html); if (o && typeof o === 'object' && o.sheets && typeof o.sheets === 'object') html = Object.entries(o.sheets as Record<string, unknown>).map(([n, h]) => '<h2>' + escHtml(String(n)) + '</h2>' + (typeof h === 'string' ? h : '')).join('<br>'); } catch { /* không phải JSON Excel: giữ nguyên */ }
+    }
     if (!html.trim() || html.length > 9_000_000) return;
     const note = typeof row.data?.note === 'string' && row.data.note.trim() ? '<p><b>Ghi chú:</b> ' + escHtml(row.data.note) + '</p><hr>' : '';
-    const page = '<!doctype html><html><head><meta charset="utf-8"><title>' + escHtml(readable(row.document_id)) + '</title></head><body>' + note + html + '</body></html>';
+    const page = '<!doctype html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse}td,th{vertical-align:top}</style><title>' + escHtml(readable(row.document_id)) + '</title></head><body>' + note + html + '</body></html>';
     await uploadHtmlAsDoc(readable(row.document_id) + ' (bản xem v' + ver + ')', page, { vdid: did(row.document_id), ver: String(ver), kind: 'view' }, folder);
   } catch { /* bản xem là phần bổ sung, bỏ qua lỗi */ }
+}
+const MIME: Record<string, string> = { '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', '.pdf': 'application/pdf' };
+// Đưa TỆP GỐC (Word/Excel/PDF) lên Drive đúng định dạng, mỗi tài liệu một lần. Drive mở Word/Excel/PDF y như tệp gốc.
+// Lưu ý: đây là biểu mẫu trống/gốc, chưa gồm phần đã nhập trong ứng dụng (phần đó nằm ở tệp JSON và bản xem).
+async function originalCopy(row: Row, folder: string): Promise<void> {
+  try {
+    const rel = relFromId(row.document_id); if (!rel) return;
+    const ext = path.extname(rel).toLowerCase(); const mime = MIME[ext]; if (!mime) return;
+    const root = path.join(process.cwd(), 'public', '2429.2026'); const abs = path.resolve(root, ...rel.split('/'));
+    if (!abs.startsWith(root + path.sep)) return;
+    const q = "appProperties has { key='odid' and value='" + did(row.document_id) + "' }";
+    if ((await listFiles(folder, q, undefined, 1)).files.length) return;
+    const st = await fs.stat(abs); if (!st.isFile() || st.size > 25_000_000) return;
+    await uploadFile(readable(row.document_id) + ' (tệp gốc)' + ext, await fs.readFile(abs), mime, { odid: did(row.document_id), kind: 'original' }, folder);
+  } catch { /* bản gốc là phần bổ sung, bỏ qua lỗi */ }
 }
 const payloadOf = (row: Row, ts: string) => ({ schema: SCHEMA, document_id: row.document_id, form_id: row.form_id ?? null, user_id: row.user_id, version: Number(row.version) || 0, created_at: row.created_at, updated_at: row.updated_at, archived_at: ts, data: row.data });
 
@@ -73,7 +93,7 @@ export async function runArchive(opts: { mode?: 'due' | 'copy'; limit?: number; 
           const ts = new Date().toISOString();
           const up = await uploadJson(readable(row.document_id) + '__v' + ver + '__' + ts.replace(/[:.]/g, '-') + '.json', payloadOf(row, ts), { did: did(row.document_id), ver: String(ver), kind: mode === 'due' ? 'archive' : 'copy' }, folder);
           if (up.md5 && up.md5 !== up.localMd5) throw new Error('Kiểm tra toàn vẹn MD5 không khớp sau khi tải lên Drive (không xóa dữ liệu trong Supabase).');
-          worked++; run.bytes += up.size; await viewCopy(row, ver, folder);
+          worked++; run.bytes += up.size; await originalCopy(row, folder); await viewCopy(row, ver, folder);
           if (mode === 'copy') { run.copied++; continue; }
           const stub: Stub = { archived: true, archive: { provider: 'gdrive', fileId: up.id, md5: up.md5 || up.localMd5, bytes: up.size, archivedAt: ts, version: ver, name: readable(row.document_id) }, savedAt: Number(row.data?.savedAt) || undefined };
           let u = db.from('form_records').update({ data: stub }).eq('id', row.id).eq('updated_at', row.updated_at);
