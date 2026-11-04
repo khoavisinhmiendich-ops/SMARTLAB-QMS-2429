@@ -1,7 +1,8 @@
 import crypto from 'node:crypto';
 import { supabase, explainSupabaseError } from './storage';
-import { DriveError, driveEnv, ensureFolder, uploadJson, uploadHtmlAsDoc, uploadFile, downloadText, listFiles, writeState, type DriveFile } from './drive';
+import { DriveError, driveEnv, ensureFolder, uploadJson, uploadHtmlAsDoc, uploadFile, exportDocx, deleteFile, downloadText, listFiles, writeState, type DriveFile } from './drive';
 import { canonicalId, idVariants, relFromId } from './docId';
+import * as XLSX from 'xlsx';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { auditLog } from './security';
@@ -31,22 +32,9 @@ async function driveHas(folderId: string, docId: string, version: number): Promi
   return r.files.length > 0;
 }
 const escHtml = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-// Tạo thêm bản Google Docs đọc được cạnh tệp JSON. Lỗi ở bước này KHÔNG ảnh hưởng sao lưu chính.
-async function viewCopy(row: Row, ver: number, folder: string): Promise<void> {
-  try {
-    let html = typeof row.data?.editedContent === 'string' ? row.data.editedContent : '';
-    if (html.trim().startsWith('{')) { // Excel: {"v":2,"sheets":{"<tên sheet>":"<html>"}} -> mỗi sheet một phần, không in chuỗi JSON thô
-      try { const o = JSON.parse(html); if (o && typeof o === 'object' && o.sheets && typeof o.sheets === 'object') html = Object.entries(o.sheets as Record<string, unknown>).map(([n, h]) => '<h2>' + escHtml(String(n)) + '</h2>' + (typeof h === 'string' ? h : '')).join('<br>'); } catch { /* không phải JSON Excel: giữ nguyên */ }
-    }
-    if (!html.trim() || html.length > 9_000_000) return;
-    const note = typeof row.data?.note === 'string' && row.data.note.trim() ? '<p><b>Ghi chú:</b> ' + escHtml(row.data.note) + '</p><hr>' : '';
-    const page = '<!doctype html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse}td,th{vertical-align:top}</style><title>' + escHtml(readable(row.document_id)) + '</title></head><body>' + note + html + '</body></html>';
-    await uploadHtmlAsDoc(readable(row.document_id) + ' (bản xem v' + ver + ')', page, { vdid: did(row.document_id), ver: String(ver), kind: 'view' }, folder);
-  } catch { /* bản xem là phần bổ sung, bỏ qua lỗi */ }
-}
 const MIME: Record<string, string> = { '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', '.pdf': 'application/pdf' };
 // Đưa TỆP GỐC (Word/Excel/PDF) lên Drive đúng định dạng, mỗi tài liệu một lần. Drive mở Word/Excel/PDF y như tệp gốc.
-// Lưu ý: đây là biểu mẫu trống/gốc, chưa gồm phần đã nhập trong ứng dụng (phần đó nằm ở tệp JSON và bản xem).
+// Lưu ý: đây là biểu mẫu trống/gốc, chưa gồm phần đã nhập trong ứng dụng (phần đó nằm ở tệp "(đã nhập vN)" và tệp JSON).
 async function originalCopy(row: Row, folder: string): Promise<void> {
   try {
     const rel = relFromId(row.document_id); if (!rel) return;
@@ -58,6 +46,40 @@ async function originalCopy(row: Row, folder: string): Promise<void> {
     const st = await fs.stat(abs); if (!st.isFile() || st.size > 25_000_000) return;
     await uploadFile(readable(row.document_id) + ' (tệp gốc)' + ext, await fs.readFile(abs), mime, { odid: did(row.document_id), kind: 'original' }, folder);
   } catch { /* bản gốc là phần bổ sung, bỏ qua lỗi */ }
+}
+const XLSX_MIME = MIME['.xlsx'] || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+function sheetsToXlsx(sheets: Record<string, unknown>): Buffer | null {
+  const out = XLSX.utils.book_new(); const used = new Set<string>(); let n = 0;
+  for (const [name, h] of Object.entries(sheets)) {
+    if (typeof h !== 'string' || !h.trim()) continue;
+    try {
+      const wb = XLSX.read(h, { type: 'string', raw: true }); const ws = wb.Sheets[wb.SheetNames[0]]; if (!ws) continue;
+      let nm = String(name).replace(/[\\/?*\[\]:]/g, '_').slice(0, 31) || 'Sheet' + (n + 1); while (used.has(nm.toLowerCase())) nm = nm.slice(0, 28) + '_' + (n + 1); used.add(nm.toLowerCase());
+      XLSX.utils.book_append_sheet(out, ws, nm); n++;
+    } catch { /* bỏ qua sheet lỗi */ }
+  }
+  return n ? (XLSX.write(out, { type: 'buffer', bookType: 'xlsx' }) as Buffer) : null;
+}
+// Tạo tệp ĐÃ NHẬP: Word -> .docx thật (qua Google Docs tạm), Excel -> .xlsx thật. Trả về true nếu vừa tạo mới. Lỗi không ảnh hưởng sao lưu chính.
+async function editedCopy(row: Row, ver: number, folder: string): Promise<boolean> {
+  try {
+    const raw = typeof row.data?.editedContent === 'string' ? row.data.editedContent : '';
+    if (!raw.trim() || raw.length > 9_000_000) return false;
+    const props = { vdid: did(row.document_id), ver: String(ver), kind: 'view2' };
+    const q = "appProperties has { key='vdid' and value='" + props.vdid + "' } and appProperties has { key='ver' and value='" + props.ver + "' } and appProperties has { key='kind' and value='view2' }";
+    if ((await listFiles(folder, q, undefined, 1)).files.length) return false;
+    const base = readable(row.document_id) + ' (đã nhập v' + ver + ')';
+    if (raw.trim().startsWith('{')) { // Excel: {"v":2,"sheets":{"<tên sheet>":"<html>"}}
+      let o: any = null; try { o = JSON.parse(raw); } catch { /* không phải JSON Excel */ }
+      if (o?.sheets && typeof o.sheets === 'object') { const buf = sheetsToXlsx(o.sheets); if (!buf) return false; await uploadFile(base + '.xlsx', buf, XLSX_MIME, props, folder); return true; }
+    }
+    const note = typeof row.data?.note === 'string' && row.data.note.trim() ? '<p><b>Ghi chú:</b> ' + escHtml(row.data.note) + '</p><hr>' : '';
+    const page = '<!doctype html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse}td,th{vertical-align:top}</style><title>' + escHtml(readable(row.document_id)) + '</title></head><body>' + note + raw + '</body></html>';
+    const tmp = await uploadHtmlAsDoc(base + ' (tạm)', page, { kind: 'tmp' }, folder);
+    try { const buf = await exportDocx(tmp.id); await uploadFile(base + '.docx', buf, MIME['.docx'], props, folder); }
+    finally { await deleteFile(tmp.id).catch(() => {}); }
+    return true;
+  } catch { return false; }
 }
 const payloadOf = (row: Row, ts: string) => ({ schema: SCHEMA, document_id: row.document_id, form_id: row.form_id ?? null, user_id: row.user_id, version: Number(row.version) || 0, created_at: row.created_at, updated_at: row.updated_at, archived_at: ts, data: row.data });
 
@@ -89,11 +111,11 @@ export async function runArchive(opts: { mode?: 'due' | 'copy'; limit?: number; 
         if (worked >= limit || Date.now() - t0 > maxMs) { run.done = false; break outer; }
         try {
           const ver = Number(row.version) || 0;
-          if (mode === 'copy' && await driveHas(folder, row.document_id, ver)) { run.skipped++; continue; }
+          if (mode === 'copy' && await driveHas(folder, row.document_id, ver)) { await originalCopy(row, folder); if (await editedCopy(row, ver, folder)) worked++; run.skipped++; continue; } // đã có bản JSON: vẫn bổ sung tệp gốc nếu còn thiếu
           const ts = new Date().toISOString();
           const up = await uploadJson(readable(row.document_id) + '__v' + ver + '__' + ts.replace(/[:.]/g, '-') + '.json', payloadOf(row, ts), { did: did(row.document_id), ver: String(ver), kind: mode === 'due' ? 'archive' : 'copy' }, folder);
           if (up.md5 && up.md5 !== up.localMd5) throw new Error('Kiểm tra toàn vẹn MD5 không khớp sau khi tải lên Drive (không xóa dữ liệu trong Supabase).');
-          worked++; run.bytes += up.size; await originalCopy(row, folder); await viewCopy(row, ver, folder);
+          worked++; run.bytes += up.size; await originalCopy(row, folder); await editedCopy(row, ver, folder);
           if (mode === 'copy') { run.copied++; continue; }
           const stub: Stub = { archived: true, archive: { provider: 'gdrive', fileId: up.id, md5: up.md5 || up.localMd5, bytes: up.size, archivedAt: ts, version: ver, name: readable(row.document_id) }, savedAt: Number(row.data?.savedAt) || undefined };
           let u = db.from('form_records').update({ data: stub }).eq('id', row.id).eq('updated_at', row.updated_at);

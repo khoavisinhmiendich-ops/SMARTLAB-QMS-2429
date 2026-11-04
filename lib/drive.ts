@@ -170,6 +170,14 @@ export async function uploadHtmlAsDoc(name: string, html: string, props: Record<
   const j: any = await r.json();
   return { id: String(j.id) };
 }
+// Xuất một Google Docs tạm sang .docx thật, rồi xóa bản tạm: kết quả là tệp Word (biểu tượng W) chứ không phải Google Docs.
+export async function exportDocx(fileId: string): Promise<Buffer> {
+  const r = await dfetch(API + '/files/' + encodeURIComponent(fileId) + '/export?mimeType=' + encodeURIComponent('application/vnd.openxmlformats-officedocument.wordprocessingml.document'), {}, 120000);
+  return Buffer.from(await r.arrayBuffer());
+}
+export async function deleteFile(fileId: string): Promise<void> {
+  await dfetch(API + '/files/' + encodeURIComponent(fileId), { method: 'DELETE' });
+}
 export async function downloadText(fileId: string): Promise<string> {
   const r = await dfetch(API + '/files/' + encodeURIComponent(fileId) + '?alt=media', {}, 120000);
   return await r.text();
