@@ -1,10 +1,8 @@
 import crypto from 'node:crypto';
 import { supabase, explainSupabaseError } from './storage';
 import { DriveError, driveEnv, ensureFolder, uploadJson, uploadHtmlAsDoc, uploadFile, exportDocx, deleteFile, downloadText, listFiles, writeState, type DriveFile } from './drive';
-import { canonicalId, idVariants, relFromId } from './docId';
+import { canonicalId, idVariants } from './docId';
 import * as XLSX from 'xlsx';
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import { auditLog } from './security';
 // Lưu trữ hai chiều Supabase <-> Google Drive:
 //  - "due": bản ghi không được sửa quá N ngày (mặc định 60) được chép lên Drive, kiểm tra toàn vẹn (MD5), rồi thay nội dung trong Supabase
@@ -32,25 +30,13 @@ async function driveHas(folderId: string, docId: string, version: number): Promi
   return r.files.length > 0;
 }
 const escHtml = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const MIME: Record<string, string> = { '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', '.pdf': 'application/pdf' };
-// Đưa TỆP GỐC (Word/Excel/PDF) lên Drive đúng định dạng, mỗi tài liệu một lần. Drive mở Word/Excel/PDF y như tệp gốc.
-// Lưu ý: đây là biểu mẫu trống/gốc, chưa gồm phần đã nhập trong ứng dụng (phần đó nằm ở tệp "(đã nhập vN)" và tệp JSON).
-async function originalCopy(row: Row, folder: string): Promise<void> {
-  try {
-    const rel = relFromId(row.document_id); if (!rel) return;
-    const ext = path.extname(rel).toLowerCase(); const mime = MIME[ext]; if (!mime) return;
-    const root = path.join(process.cwd(), 'public', '2429.2026'); const abs = path.resolve(root, ...rel.split('/'));
-    if (!abs.startsWith(root + path.sep)) return;
-    const q = "appProperties has { key='odid' and value='" + did(row.document_id) + "' }";
-    if ((await listFiles(folder, q, undefined, 1)).files.length) return;
-    const st = await fs.stat(abs); if (!st.isFile() || st.size > 25_000_000) return;
-    await uploadFile(readable(row.document_id) + ' (tệp gốc)' + ext, await fs.readFile(abs), mime, { odid: did(row.document_id), kind: 'original' }, folder);
-  } catch { /* bản gốc là phần bổ sung, bỏ qua lỗi */ }
-}
+const MIME: Record<string, string> = { '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' };
 const XLSX_MIME = MIME['.xlsx'] || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-function sheetsToXlsx(sheets: Record<string, unknown>): Buffer | null {
+function sheetsToXlsx(sheets: Record<string, unknown>, order?: unknown): Buffer | null {
   const out = XLSX.utils.book_new(); const used = new Set<string>(); let n = 0;
-  for (const [name, h] of Object.entries(sheets)) {
+  // Thứ tự trang tính do người dùng sắp xếp (names); nếu không có thì dùng thứ tự khóa như trước.
+  const entries: [string, unknown][] = Array.isArray(order) && order.length ? (order as unknown[]).filter((k): k is string => typeof k === 'string' && Object.prototype.hasOwnProperty.call(sheets, k)).map((k) => [k, sheets[k]] as [string, unknown]) : Object.entries(sheets);
+  for (const [name, h] of entries) {
     if (typeof h !== 'string' || !h.trim()) continue;
     try {
       const wb = XLSX.read(h, { type: 'string', raw: true }); const ws = wb.Sheets[wb.SheetNames[0]]; if (!ws) continue;
@@ -71,7 +57,7 @@ async function editedCopy(row: Row, ver: number, folder: string): Promise<boolea
     const base = readable(row.document_id) + ' (đã nhập v' + ver + ')';
     if (raw.trim().startsWith('{')) { // Excel: {"v":2,"sheets":{"<tên sheet>":"<html>"}}
       let o: any = null; try { o = JSON.parse(raw); } catch { /* không phải JSON Excel */ }
-      if (o?.sheets && typeof o.sheets === 'object') { const buf = sheetsToXlsx(o.sheets); if (!buf) return false; await uploadFile(base + '.xlsx', buf, XLSX_MIME, props, folder); return true; }
+      if (o?.sheets && typeof o.sheets === 'object') { const buf = sheetsToXlsx(o.sheets, o.names); if (!buf) return false; await uploadFile(base + '.xlsx', buf, XLSX_MIME, props, folder); return true; }
     }
     const note = typeof row.data?.note === 'string' && row.data.note.trim() ? '<p><b>Ghi chú:</b> ' + escHtml(row.data.note) + '</p><hr>' : '';
     const page = '<!doctype html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse}td,th{vertical-align:top}</style><title>' + escHtml(readable(row.document_id)) + '</title></head><body>' + note + raw + '</body></html>';
@@ -111,11 +97,11 @@ export async function runArchive(opts: { mode?: 'due' | 'copy'; limit?: number; 
         if (worked >= limit || Date.now() - t0 > maxMs) { run.done = false; break outer; }
         try {
           const ver = Number(row.version) || 0;
-          if (mode === 'copy' && await driveHas(folder, row.document_id, ver)) { await originalCopy(row, folder); if (await editedCopy(row, ver, folder)) worked++; run.skipped++; continue; } // đã có bản JSON: vẫn bổ sung tệp gốc nếu còn thiếu
+          if (mode === 'copy' && await driveHas(folder, row.document_id, ver)) { if (await editedCopy(row, ver, folder)) worked++; run.skipped++; continue; } // đã có bản JSON: vẫn bổ sung tệp gốc nếu còn thiếu
           const ts = new Date().toISOString();
           const up = await uploadJson(readable(row.document_id) + '__v' + ver + '__' + ts.replace(/[:.]/g, '-') + '.json', payloadOf(row, ts), { did: did(row.document_id), ver: String(ver), kind: mode === 'due' ? 'archive' : 'copy' }, folder);
           if (up.md5 && up.md5 !== up.localMd5) throw new Error('Kiểm tra toàn vẹn MD5 không khớp sau khi tải lên Drive (không xóa dữ liệu trong Supabase).');
-          worked++; run.bytes += up.size; await originalCopy(row, folder); await editedCopy(row, ver, folder);
+          worked++; run.bytes += up.size; await editedCopy(row, ver, folder);
           if (mode === 'copy') { run.copied++; continue; }
           const stub: Stub = { archived: true, archive: { provider: 'gdrive', fileId: up.id, md5: up.md5 || up.localMd5, bytes: up.size, archivedAt: ts, version: ver, name: readable(row.document_id) }, savedAt: Number(row.data?.savedAt) || undefined };
           let u = db.from('form_records').update({ data: stub }).eq('id', row.id).eq('updated_at', row.updated_at);

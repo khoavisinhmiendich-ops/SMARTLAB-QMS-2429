@@ -188,7 +188,7 @@ body.sb-resizing iframe{pointer-events:none}
 
 /* ===== Printing ("In"): only the document itself, with the chosen paper orientation ===== */
 @media print{
-  .viewer-head,.edit-banner,.form-panel,.preview-original,.office-ribbon,.office-tabs,.sheet-tabs,.orient-menu,.orient-backdrop,.cell-resize-handle,.row-resize-handle,[data-qms-drag]{display:none!important}
+  .viewer-head,.edit-banner,.form-panel,.preview-original,.office-ribbon,.office-tabs,.sheet-tabs,.sheet-bar,.orient-menu,.orient-backdrop,.cell-resize-handle,.row-resize-handle,[data-qms-drag]{display:none!important}
   html,body{background:#fff!important}
   .preview-shell,.viewer,.card,.document-detail,.main{border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;background:#fff!important}
   .preview-content{zoom:1!important;overflow:visible!important;max-height:none!important;border:0!important;padding:0!important;background:#fff!important}
@@ -249,3 +249,47 @@ body.sb-resizing iframe{pointer-events:none}
 .backup-log{font-size:12px;line-height:1.6;max-height:220px;overflow:auto;color:#33495d}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#b9c6d2;margin-right:6px}
 .dot.ok{background:#1f9d57}.dot.bad{background:#d93025}
+
+/* ---- Thanh trang tính kiểu Excel (đáy vùng xem): mũi tên, dấu ⋯, tab, nút +, thanh ⋮, thanh cuộn ngang ---- */
+.sheet-host .sheet-body{scrollbar-width:none}
+.sheet-host .sheet-body::-webkit-scrollbar{display:none}
+.sheet-bar{position:sticky;bottom:0;z-index:14;display:flex;align-items:stretch;height:30px;background:#f3f3f3;border:1px solid #c9d3dc;border-top:0;font-family:'Times New Roman',serif;color:#444;user-select:none;-webkit-user-select:none}
+.sheet-bar .sheet-nav{display:flex;align-items:stretch;flex:0 0 auto;padding:0 2px}
+.sheet-bar .sheet-btn{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:24px;padding:0;border:0;border-radius:0;background:transparent;color:#444;font-size:16px;line-height:1}
+.sheet-bar .sheet-btn:hover:not(:disabled){background:#e0e4e2}
+.sheet-bar .sheet-btn:disabled{color:#b3b9b6;cursor:default}
+.sheet-bar .sheet-dots{width:20px;font-size:14px;color:#555}
+.sheet-bar .sheet-dots.hid{visibility:hidden;pointer-events:none}
+.sheet-bar .sheet-add{width:28px;font-size:20px;font-weight:700;color:#217346}
+.sheet-bar .sheet-add:disabled{color:#b3b9b6}
+.sheet-bar .sheet-tabwrap{display:flex;flex:0 1 60%;min-width:60px}
+.sheet-bar .sheet-strip{position:relative;display:flex;align-items:flex-start;gap:2px;width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.sheet-bar .sheet-strip::-webkit-scrollbar{display:none}
+.sheet-bar .sheet-tab{flex:0 0 auto;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #c9d3dc;border-top:0;border-radius:0 0 6px 6px;background:#e9eceb;color:#000;padding:6px 12px;font-size:12.5px;line-height:1.25;cursor:pointer;outline:0}
+.sheet-bar .sheet-tab:hover{background:#f1f3f2}
+.sheet-bar .sheet-tab:focus-visible{box-shadow:inset 0 0 0 2px #217346}
+.sheet-bar .sheet-tab.active{background:#fff;color:#217346;font-weight:700;box-shadow:inset 0 -2px #217346}
+.sheet-bar .sheet-tab.editing{max-width:none;padding:5px 8px 5px;background:#fff;box-shadow:inset 0 0 0 2px #217346;cursor:text}
+.sheet-bar .sheet-tab.drop-l{box-shadow:inset 3px 0 0 #217346}
+.sheet-bar .sheet-tab.drop-r{box-shadow:inset -3px 0 0 #217346}
+.sheet-bar .sheet-rename{display:block;min-width:48px;margin:0;padding:0;border:0;outline:0;background:transparent;color:#000;font:inherit;font-weight:700}
+.sheet-bar .sheet-split{flex:0 0 14px;display:flex;align-items:center;justify-content:center;color:#8a918e;font-size:14px;cursor:col-resize;touch-action:none}
+.sheet-bar .sheet-split:hover{color:#217346;background:#e6ebe8}
+.sheet-bar .sheet-hscroll{flex:1 1 0;min-width:70px;display:flex;align-items:center;gap:0;margin-left:2px;background:#f1f1f1;border-left:1px solid #dadfdc}
+.sheet-bar .sheet-hs-arrow{width:18px;font-size:11px;color:#606060}
+.sheet-bar .sheet-hs-track{position:relative;flex:1 1 auto;height:100%;min-width:0;cursor:default}
+.sheet-bar .sheet-hs-thumb{position:absolute;top:8px;bottom:8px;min-width:28px;border-radius:7px;background:#c1c1c1;cursor:pointer;touch-action:none}
+.sheet-bar .sheet-hs-thumb:hover{background:#a8a8a8}
+.sheet-bar .sheet-hs-thumb.off{background:#dcdcdc;cursor:default;pointer-events:none}
+.sheet-menu .orient-item:disabled{opacity:.45;cursor:default}
+.sheet-menu .orient-item:disabled:hover{background:transparent}
+.sheet-menu .sheet-menu-key{margin-left:auto;color:#7b8b98;font-weight:400;font-size:12px}
+.sheet-menu .sheet-menu-danger{color:#b42318}
+.sheet-menu .sheet-menu-list{max-height:min(50vh,320px);overflow:auto}
+.sheet-menu .sheet-menu-list .orient-item{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+@media(max-width:600px){.sheet-bar .sheet-tabwrap{flex-basis:58%}.sheet-bar .sheet-hscroll{min-width:60px}}
+/* Excel: vùng bắt chuột của tay kéo cột/hàng rộng hơn (kể cả ô bị cắt chữ overflow:hidden) để kéo giãn dễ dàng */
+.preview-content .sheet-body .cell-resize-handle{width:8px!important;right:-3px}
+.preview-content .sheet-body .row-resize-handle{height:8px!important;bottom:-3px}
+.preview-content .sheet-body td[style*="overflow: hidden"]>.cell-resize-handle,.preview-content .sheet-body th[style*="overflow: hidden"]>.cell-resize-handle{right:0}
+.preview-content .sheet-body td[style*="overflow: hidden"]>.row-resize-handle,.preview-content .sheet-body th[style*="overflow: hidden"]>.row-resize-handle{bottom:0}
