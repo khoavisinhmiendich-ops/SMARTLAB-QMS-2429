@@ -22,6 +22,8 @@ export async function middleware(req:NextRequest){
  // Google chuyển hướng về đây từ trang khác (cookie đăng nhập SameSite=Strict không được gửi kèm): route tự xác thực bằng chuỗi state đã ký (15 phút), không có state hợp lệ thì không làm gì.
  if(p==='/api/drive/callback'&&req.nextUrl.searchParams.has('state'))return NextResponse.next();
  if(p==='/privacy.html')return NextResponse.next();
+ // Tài nguyên công khai để cài ứng dụng (PWA) và hiển thị màn hình khóa: manifest, service worker, icon, font.
+ if(p==='/manifest.webmanifest'||p==='/sw.js'||p==='/favicon.ico'||p.startsWith('/icon/')||p.startsWith('/fonts/'))return NextResponse.next();
  if(p==='/login'||p==='/api/auth/login'||p==='/api/auth/logout'||p.startsWith('/_next/')||p==='/favicon.ico'||p==='/robots.txt')return NextResponse.next();
  if(await validSession(req.cookies.get('qms_session')?.value,process.env.QMS_AUTH_SECRET)){
   if(needsGate(p)&&!(await validSession(req.cookies.get(GATE_COOKIE)?.value,process.env.QMS_AUTH_SECRET,'bm.'))){

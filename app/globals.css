@@ -293,3 +293,95 @@ body.sb-resizing iframe{pointer-events:none}
 .preview-content .sheet-body .row-resize-handle{height:8px!important;bottom:-3px}
 .preview-content .sheet-body td[style*="overflow: hidden"]>.cell-resize-handle,.preview-content .sheet-body th[style*="overflow: hidden"]>.cell-resize-handle{right:0}
 .preview-content .sheet-body td[style*="overflow: hidden"]>.row-resize-handle,.preview-content .sheet-body th[style*="overflow: hidden"]>.row-resize-handle{bottom:0}
+/* Thẻ thống kê thứ 5 (Sổ tay & Tài liệu khác) */
+@media(min-width:951px){.metrics.metrics-5{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(max-width:950px){.metrics.metrics-5 .metric-card:last-child:nth-child(odd){grid-column:1/-1}}
+.metric-rose .metric-icon{background:#fde8ee;color:#c2456a}
+.metric-rose .metric-accent{background:linear-gradient(90deg,#c2456a,#f2a0b8)}
+/* Trang Chấm điểm tiêu chí */
+.crit-wrap{max-width:1280px;margin:0 auto;padding:26px 30px 40px}
+.crit-of{font-size:14px;color:#8296a7;font-weight:700}
+.crit-table-wrap{overflow-x:auto;background:#fff;border:1px solid #e2eaf1;border-radius:14px}
+.crit-table{width:100%;border-collapse:collapse;font-size:13px}
+.crit-table th{padding:11px 12px;text-align:center;font-size:11px;letter-spacing:.4px;color:#71869a;background:#f6f9fb;border-bottom:1px solid #e2eaf1;white-space:nowrap}
+.crit-table th:first-child,.crit-table td:first-child{text-align:left}
+.crit-table td{padding:11px 12px;text-align:center;border-bottom:1px solid #eef3f7;color:#173d59;vertical-align:middle}
+.crit-table td:first-child b{display:block;font-size:13px}.crit-table td:first-child span{display:block;font-size:11px;color:#72859a;margin-top:2px;max-width:340px}
+.crit-table tbody tr{cursor:pointer;transition:background .15s}.crit-table tbody tr:hover,.crit-row-open{background:#f3f9fb}
+.crit-total{background:#f6f9fb;cursor:default!important}.crit-total td{border-bottom:0;font-weight:700}
+.crit-ok{color:#188264;font-weight:700}.crit-mid{color:#b57b1d;font-weight:700}.crit-bad{color:#c0392b;font-weight:700}
+.crit-bar{height:7px;min-width:90px;background:#e8eff4;border-radius:99px;overflow:hidden}.crit-bar i{display:block;height:100%;background:linear-gradient(90deg,#07878b,#70d9c0);border-radius:99px}
+.crit-table small{font-size:11px;color:#72859a}
+.crit-note,.crit-foot{margin:12px 2px 0;font-size:12px;line-height:1.6;color:#72859a}.crit-foot{margin-top:22px}
+.crit-list{display:flex;flex-direction:column;gap:10px}
+.crit-item{background:#fff;border:1px solid #e2eaf1;border-left:4px solid #cbd8e2;border-radius:12px;padding:12px 14px}
+.crit-item-du{border-left-color:#2fa37f}.crit-item-mot-phan{border-left-color:#d9a032}.crit-item-thieu{border-left-color:#d6584a}.crit-item-tai-cho{border-left-color:#8aa3b8}
+.crit-item-head{display:flex;align-items:center;gap:12px}
+.crit-id{flex:none;min-width:42px;text-align:center;padding:4px 8px;border-radius:8px;background:#eef4f8;color:#1d465f;font-weight:800;font-size:12px}
+.crit-title{flex:1;min-width:0;font-size:13px;line-height:1.45;color:#173d59}
+.crit-mark{font-style:normal;margin-left:6px;font-weight:800;color:#b57b1d;font-size:12px}
+.crit-pts{flex:none;font-size:12px;font-weight:700;color:#4a6379;white-space:nowrap}
+.crit-badge{flex:none;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.crit-badge.crit-du{background:#e3f7ef;color:#188264}.crit-badge.crit-mot-phan{background:#fff3df;color:#a8741a}.crit-badge.crit-thieu{background:#fde9e6;color:#c0392b}.crit-badge.crit-tai-cho{background:#edf2f6;color:#5b7488}
+.crit-evidence{margin:10px 0 0 54px;display:flex;flex-direction:column;gap:6px}
+.crit-ev{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:12px}
+.crit-ev.ok>span{color:#188264;font-weight:600}.crit-ev.miss>span{color:#c0392b;font-weight:600}.crit-ev.site>span{color:#5b7488}
+.crit-ev a{padding:2px 8px;border-radius:6px;background:#f1f6f8;color:#1d465f;font-size:11px}.crit-ev a:hover{color:#087f8b;text-decoration:underline}
+@media(max-width:700px){.crit-wrap{padding:18px 14px 30px}.crit-item-head{flex-wrap:wrap}.crit-title{flex-basis:100%;order:3}.crit-evidence{margin-left:0}}
+.crit-wrap .section-heading>div:first-child{text-align:left}.crit-wrap .section-heading h2,.crit-wrap .section-heading p{text-align:left;margin-left:0}
+.crit-mark-btns{display:inline-flex;flex-wrap:wrap;gap:6px}.crit-mbtn{border:1px solid #d5e0e8;background:#fff;color:#3c5870;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px}.crit-mbtn:hover{border-color:#07878b;color:#07878b}.crit-mbtn.on.crit-mbtn-du{background:#e3f7ef;border-color:#2fa37f;color:#188264}.crit-mbtn.on.crit-mbtn-mot-phan{background:#fff3df;border-color:#d9a032;color:#a8741a}.crit-mbtn.on.crit-mbtn-thieu{background:#fde9e6;border-color:#d6584a;color:#c0392b}
+
+/* ===== Choco Cooky (Samsung) nếu máy có sẵn; nếu không dùng Itim (OFL, có dấu tiếng Việt) làm dự phòng ===== */
+@font-face{font-family:'Choco Cooky';font-display:swap;src:local('Choco cooky'),local('Choco Cooky'),local('ChocoCooky'),local('Cre ChocoCookie'),local('CreChocoCookie'),local('Cre ChocoCookie C')}
+@font-face{font-family:'Itim Cooky';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/itim-vietnamese.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:'Itim Cooky';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/itim-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Itim Cooky';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/itim-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+html body .cooky,html body .cooky *{font-family:'Choco Cooky','Itim Cooky','Comic Sans MS',cursive!important;font-weight:400!important;letter-spacing:.2px}
+
+/* ===== Màn hình khóa: lời chào động ===== */
+.lock-stack{position:relative;z-index:1;width:min(100%,470px);display:grid;justify-items:center;gap:16px}
+.lock-stack>.lock-card{width:100%}
+.hello{position:relative;text-align:center;padding:6px 10px 0;user-select:none;-webkit-user-select:none}
+.hello-line{display:block;line-height:1.08}
+.hello-l1{font-size:clamp(48px,11vw,68px)}
+.hello-l2{font-size:clamp(23px,5.6vw,31px);margin-top:4px}
+.hello-word{display:inline-block;white-space:nowrap}
+.hello-gap{display:inline-block;width:.28em}
+.hello-ch{display:inline-block;color:hsl(calc(219 - var(--i)*2.4) 84% calc(36% + var(--i)*.35%));text-shadow:0 2px 0 #fff,0 7px 14px #0b3d9126;transform-origin:50% 90%;animation:helloIn .8s cubic-bezier(.2,1.25,.3,1) both,helloWave 3.4s ease-in-out infinite;animation-delay:calc(var(--i)*60ms + .15s),calc(var(--i)*60ms + 1.7s)}
+.hello-l2 .hello-ch{animation-delay:calc(var(--i)*38ms + .75s),calc(var(--i)*70ms + 2.4s)}
+.hello-hand{display:inline-block;margin-left:.12em;font-size:.72em;transform-origin:70% 75%;animation:helloIn .8s cubic-bezier(.2,1.25,.3,1) .5s both,helloHand 2.2s ease-in-out 1.5s infinite}
+.hello-squiggle{display:block;width:min(78%,300px);height:14px;margin:6px auto 0;overflow:visible}
+.hello-squiggle path{fill:none;stroke:#2f8cff;stroke-width:3.2;stroke-linecap:round;stroke-dasharray:340;stroke-dashoffset:340;animation:helloDraw 1.3s ease-out 1.6s forwards}
+.hello-spark{position:absolute;color:#4aa3ff;font-size:20px;line-height:1;pointer-events:none;opacity:0;animation:helloSpark 2.8s ease-in-out infinite}
+.hello-spark.s1{left:6%;top:12%;animation-delay:.9s}
+.hello-spark.s2{right:7%;top:4%;font-size:26px;color:#13b3a5;animation-delay:1.5s}
+.hello-spark.s3{right:14%;top:52%;font-size:15px;animation-delay:2.1s}
+.hello-spark.s4{left:12%;bottom:14%;font-size:16px;color:#13b3a5;animation-delay:2.6s}
+@keyframes helloIn{0%{opacity:0;transform:translateY(40px) scale(.3) rotate(-16deg)}60%{opacity:1;transform:translateY(-9px) scale(1.14) rotate(5deg)}100%{opacity:1;transform:none}}
+@keyframes helloWave{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px) rotate(-2deg)}}
+@keyframes helloHand{0%,60%,100%{transform:rotate(0)}10%{transform:rotate(16deg)}20%{transform:rotate(-10deg)}30%{transform:rotate(16deg)}40%{transform:rotate(-6deg)}50%{transform:rotate(10deg)}}
+@keyframes helloDraw{to{stroke-dashoffset:0}}
+@keyframes helloSpark{0%,100%{opacity:0;transform:scale(.3) rotate(0)}45%{opacity:1;transform:scale(1.15) rotate(90deg)}70%{opacity:.6;transform:scale(.8) rotate(150deg)}}
+
+/* ===== Màn hình chính: lời chào theo giờ ===== */
+.home-greeting{display:inline-flex;align-items:center;gap:10px;margin:0 0 12px;font-size:clamp(24px,2.6vw,33px);line-height:1.15;color:#0f4fa8;animation:greetIn .7s cubic-bezier(.2,1.1,.3,1) both}
+.home-greeting-text{background:linear-gradient(100deg,#0b3d91,#1e88e5 55%,#0aa6a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;background-size:200% 100%;animation:greetShine 6s ease-in-out infinite}
+.home-greeting-ico{display:inline-grid;place-items:center;width:1.5em;height:1.5em;border-radius:50%;background:#fff;border:1px solid #dbe8f5;box-shadow:0 6px 14px #1a5fb41f;font-size:.82em;animation:greetBob 3.2s ease-in-out infinite}
+@keyframes greetIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes greetShine{0%,100%{background-position:0 0}50%{background-position:100% 0}}
+@keyframes greetBob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-3px) rotate(8deg)}}
+
+/* ===== Nút / hộp thoại cài đặt ứng dụng ===== */
+.install-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:0 14px;border:1px solid #bcd6f5;border-radius:999px;background:linear-gradient(180deg,#fff,#eef5ff);color:#0f4fa8;font-size:13px;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.install-btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px #1a5fb42a}
+.install-btn svg{width:16px;height:16px}
+.install-btn.install-compact{min-height:34px;padding:0 12px;font-size:12px}
+.install-wrap{display:flex;justify-content:center;margin-top:14px}
+.install-modal-back{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:18px;background:#0b1f3a8c;backdrop-filter:blur(3px)}
+.install-modal{width:min(100%,420px);padding:22px 22px 18px;border-radius:18px;background:#fff;box-shadow:0 30px 70px #0b1f3a55;color:#173e58}
+.install-modal h3{margin:0 0 4px;font-size:20px;color:#0f4fa8}
+.install-modal p{margin:0 0 10px;font-size:14px;line-height:1.55;color:#4d667a}
+.install-modal ol{margin:0 0 14px;padding-left:20px;font-size:14px;line-height:1.7}
+.install-modal .install-close{width:100%;min-height:42px;border:0;border-radius:10px;background:linear-gradient(100deg,#0b3d91,#1e88e5);color:#fff;font-weight:700;font-size:14px;cursor:pointer}
+@media(max-width:700px){.install-btn.install-compact span{display:none}.install-btn.install-compact{padding:0 10px}}
+@media (prefers-reduced-motion:reduce){.hello *,.home-greeting,.home-greeting *{animation:none!important;opacity:1!important;transform:none!important}.hello-squiggle path{stroke-dashoffset:0!important}}
