@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GATE_COOKIE, isGatedName, isGatedRelPath } from './lib/gate';
+import { GATE_COOKIE, CRIT_COOKIE, isCritPath, isGatedName, isGatedRelPath } from './lib/gate';
 async function validSession(token:string|undefined,secret:string|undefined,prefix=''){
  if(!token||!secret)return false; const dot=token.indexOf('.');if(dot<1)return false;const exp=token.slice(0,dot),sig=token.slice(dot+1);if(!/^\d+$/.test(exp)||Number(exp)<=Date.now()||!sig)return false;
  try{const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['verify']);const bytes=Uint8Array.from(atob(sig.replace(/-/g,'+').replace(/_/g,'/').padEnd(Math.ceil(sig.length/4)*4,'=')),c=>c.charCodeAt(0));return await crypto.subtle.verify('HMAC',key,bytes,new TextEncoder().encode(prefix+exp));}catch{return false}
@@ -26,6 +26,11 @@ export async function middleware(req:NextRequest){
  if(p==='/manifest.webmanifest'||p==='/sw.js'||p==='/favicon.ico'||p.startsWith('/icon/')||p.startsWith('/fonts/'))return NextResponse.next();
  if(p==='/login'||p==='/api/auth/login'||p==='/api/auth/logout'||p.startsWith('/_next/')||p==='/favicon.ico'||p==='/robots.txt')return NextResponse.next();
  if(await validSession(req.cookies.get('qms_session')?.value,process.env.QMS_AUTH_SECRET)){
+  // Mục "Chấm điểm tiêu chí": cần passkey riêng (cookie qms_crit). Truy cập thẳng /criteria thì quay về trang chủ và tự mở hộp nhập passkey.
+  if(isCritPath(p)&&!(await validSession(req.cookies.get(CRIT_COOKIE)?.value,process.env.QMS_AUTH_SECRET,'crit.'))){
+   if(p.startsWith('/api/'))return new NextResponse(JSON.stringify({error:'Mục này được bảo vệ bằng passkey.'}),{status:403,headers:{'Content-Type':'application/json'}});
+   return NextResponse.redirect(new URL('/?unlock=criteria',req.url));
+  }
   if(needsGate(p)&&!(await validSession(req.cookies.get(GATE_COOKIE)?.value,process.env.QMS_AUTH_SECRET,'bm.'))){
    if(p.startsWith('/documents/'))return NextResponse.redirect(new URL('/',req.url));
    return new NextResponse('Thư mục này được bảo vệ bằng passkey.',{status:403});

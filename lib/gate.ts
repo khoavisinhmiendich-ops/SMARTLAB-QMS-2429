@@ -15,3 +15,6 @@ export function isGatedName(name:string|undefined|null):boolean{
 export function isGatedRelPath(rel:string):boolean{
   return rel.split(/[\\/]/).some(isGatedName);
 }
+// Mục "Chấm điểm tiêu chí" được bảo vệ bằng passkey riêng (cookie qms_crit): chặn cả trang /criteria lẫn API /api/criteria.
+export const CRIT_COOKIE='qms_crit';
+export const isCritPath=(p:string)=>p==='/criteria'||p.startsWith('/criteria/')||p==='/api/criteria'||p.startsWith('/api/criteria/');
