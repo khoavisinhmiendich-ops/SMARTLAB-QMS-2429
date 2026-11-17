@@ -101,7 +101,7 @@ export default function BackupPage() {
   const chosen = Object.keys(pick).filter((k) => pick[k]);
   const lr = st?.lastRun;
   return (
-    <main className="main backup-page">
+    <main className="main backup-page" id="main">
       <div className="viewer-head" style={{ marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}><Link className="btn" href="/">← Quay lại</Link><div><strong>Sao lưu &amp; Đồng bộ dữ liệu</strong><div className="meta">Supabase · Google Drive · IndexedDB (bộ nhớ ngoại tuyến của trình duyệt)</div></div></div>
       </div>
