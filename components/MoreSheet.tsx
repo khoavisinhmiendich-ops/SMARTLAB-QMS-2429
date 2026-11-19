@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState} from 'react';
 import InstallApp from './InstallApp';
 import LockButton from './LockButton';
+import ThemeToggle from './ThemeToggle';
 const Ico=({d}:{d:string})=><svg viewBox="0 0 24 24" aria-hidden="true"><path d={d}/></svg>;
 type Item={label:string;sub:string;d:string;href?:string;act?:()=>void;tone:string};
 // Bảng trượt từ dưới lên: các chức năng phụ gom vào một chỗ để thanh điều hướng luôn gọn (tối đa 5 mục).
@@ -23,7 +24,7 @@ export default function MoreSheet({open,onClose,home}:{open:boolean;onClose:()=>
    <div className="msheet-grab" onTouchStart={e=>{y0.current=e.touches[0].clientY}} onTouchMove={e=>{if(y0.current!==null)setDy(Math.max(0,e.touches[0].clientY-y0.current))}} onTouchEnd={()=>{const d=dy;y0.current=null;setDy(0);if(d>90)close()}}><i/></div>
    <h2>Thêm</h2>
    <ul className="msheet-list">{items.map(i=><li key={i.label}>{i.href?<a href={i.href} className={'msheet-item t-'+i.tone}><span className="msheet-ico"><Ico d={i.d}/></span><span className="msheet-copy"><strong>{i.label}</strong><small>{i.sub}</small></span><span className="msheet-go" aria-hidden="true">›</span></a>:<button type="button" className={'msheet-item t-'+i.tone} onClick={i.act}><span className="msheet-ico"><Ico d={i.d}/></span><span className="msheet-copy"><strong>{i.label}</strong><small>{i.sub}</small></span><span className="msheet-go" aria-hidden="true">›</span></button>}</li>)}</ul>
-   <div className="msheet-foot"><InstallApp compact/><LockButton/></div>
+   <div className="msheet-foot"><ThemeToggle label/><InstallApp compact/><LockButton/></div>
   </div>
  </div>
 }

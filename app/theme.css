@@ -993,3 +993,263 @@ html body .lx .cooky,html body .lx .cooky *{font-family:'Choco Cooky','Itim Cook
 .lx,.lx *,.lx *::before,.lx *::after{box-sizing:border-box}
 .lx-main{grid-template-columns:minmax(0,1fr)}
 .lx-card .lock-eyebrow{flex-wrap:wrap}
+
+/* =====================================================================
+   v6 — Giao diện chính phong cách công nghệ (html.tech) — đồng bộ với màn hình khóa
+   Giao diện Sáng cũ vẫn còn: nút ☀/🌙 ở đầu trang (hoặc bảng "Thêm" trên điện thoại).
+   ===================================================================== */
+.theme-toggle{display:inline-grid;grid-auto-flow:column;place-items:center;gap:8px;width:40px;height:40px;padding:0;border:1px solid var(--c-line);border-radius:10px;background:#fff;color:var(--c-ink2);cursor:pointer;transition:background .15s,border-color .15s}
+.theme-toggle svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.theme-toggle.with-label{width:auto;min-height:46px;padding:0 14px;border-radius:14px;flex:1;font-size:14px;font-weight:700}
+.hero-net{display:none}
+
+html.tech{color-scheme:dark;scrollbar-color:#2a5686 #06142a;
+ --c-bg:#06142a;--c-surface:#0e2646;--c-soft:#0b2142;--c-line:#21466f;--c-line2:#183858;
+ --c-ink:#eaf4ff;--c-ink2:#c5dcee;--c-muted:#95b3cb;--c-brand:#5fd0ff;--c-brand-d:#a6e6ff;--c-teal:#7fe3d6;--c-focus:#7fe3d6;
+ --sh-1:0 1px 2px #0006,0 6px 18px #0003;--sh-2:0 14px 36px #0007}
+html.tech ::-webkit-scrollbar{width:10px;height:10px}
+html.tech ::-webkit-scrollbar-thumb{background:#2a5686;border-radius:9px;border:2px solid #06142a}
+html.tech ::-webkit-scrollbar-track{background:#06142a}
+html.tech ::selection{background:#1b86f088;color:#fff}
+html.tech body{background:#06142a;color:var(--c-ink)}
+html.tech body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(70% 55% at 10% -8%,#0f5a9a66,transparent 62%),radial-gradient(55% 50% at 100% 8%,#0fb8ad33,transparent 62%),radial-gradient(60% 55% at 55% 112%,#5b4bd633,transparent 62%),linear-gradient(#071a33,#050f20)}
+html.tech body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(#5fd0ff0d 1px,transparent 1px),linear-gradient(90deg,#5fd0ff0d 1px,transparent 1px);background-size:56px 56px;-webkit-mask-image:radial-gradient(90% 70% at 50% 0%,#000,transparent);mask-image:radial-gradient(90% 70% at 50% 0%,#000,transparent)}
+html.tech .theme-toggle{background:#ffffff0f;border-color:#8fc4ee33;color:#bfe6ff}
+html.tech .theme-toggle:hover{background:#ffffff1c;border-color:#5fd0ff}
+
+/* ---- Đầu trang + thanh bên ---- */
+html.tech body .header{background:#071a33d9;border-bottom:1px solid #8fc4ee24;box-shadow:0 10px 34px #0007}
+html.tech body .brand-text strong{color:#fff}
+html.tech body .brand-text em{color:#7fe3d6}
+html.tech body .brand-text small,html.tech body .head-title span{color:#8fb2cc}
+html.tech body .head-title strong{color:#d9ebf7}
+html.tech body .head-divider{background:#8fc4ee2b}
+html.tech body .live-clock{background:#ffffff0d;border-color:#8fc4ee2b}
+html.tech body .clock-icon{background:#5fd0ff1f;color:#7fd3ff}
+html.tech body .clock-copy strong{color:#fff}
+html.tech body .clock-copy small,html.tech body .system-status{color:#95b3cb}
+html.tech body .btn{background:#ffffff0d;border-color:#8fc4ee33;color:#d4e8f6;box-shadow:none}
+html.tech body .btn:hover{background:#ffffff1a;border-color:#5fd0ff88;box-shadow:0 0 0 3px #5fd0ff1f}
+html.tech body .btn-primary{background:linear-gradient(120deg,#1b86f0,#0fb9b1);border-color:transparent;color:#fff;box-shadow:0 8px 24px #1b86f055}
+html.tech body .btn-primary:hover{border-color:transparent;box-shadow:0 12px 30px #1b86f070}
+html.tech body .header-lock-button{background:#ffffff0d;border-color:#8fc4ee33;color:#d4e8f6}
+html.tech body .header-lock-button:hover{background:#ffffff1a;border-color:#5fd0ff88;color:#fff}
+html.tech body .nav-toggle{background:#ffffff0d;border-color:#8fc4ee33;color:#d4e8f6}
+html.tech body .sidebar{background:#071a33c7;border-right:1px solid #8fc4ee1f;backdrop-filter:blur(16px)}
+html.tech body .side-profile{border-bottom-color:#8fc4ee1f}
+html.tech body .profile-orb{background:#5fd0ff1f;color:#7fd3ff}
+html.tech body .sidebar .side-profile strong{color:#fff}
+html.tech body .sidebar .side-profile span,html.tech body .sidebar .side-label,html.tech body .sidebar .side-label span{color:#8fb2cc}
+html.tech body .sidebar .side-label span{background:#ffffff10}
+html.tech body .sidebar .side-fold-toggle:hover{background:#ffffff0f}
+html.tech body .sidebar .side-fold-toggle svg{stroke:#a9cde4}
+html.tech body .sidebar .chapter{color:#c5dcee}
+html.tech body .sidebar .chapter:hover{background:#ffffff0f;color:#fff}
+html.tech body .sidebar .chapter.active{background:linear-gradient(90deg,#5fd0ff2b,#5fd0ff0a);color:#fff;box-shadow:inset 3px 0 #5fd0ff}
+html.tech body .sidebar .chapter svg{color:#7fa7c6}
+html.tech body .sidebar .chapter.active svg{color:#7fd3ff}
+html.tech body .sidebar .chapter-number{background:#ffffff12;color:#bcd7ea}
+html.tech body .sidebar .chapter.active .chapter-number{background:#5fd0ff33;color:#fff}
+html.tech body .sidebar .nav-arrow{color:#6f94b3}
+html.tech body .sidebar .nav-count{color:#95b3cb}
+html.tech body .secure-note{background:#ffffff0a;border-color:#8fc4ee22}
+html.tech body .sidebar .secure-note strong{color:#d4e8f6}
+html.tech body .sidebar .secure-note small,html.tech body .sidebar .sidebar-version{color:#8fb2cc}
+html.tech body .sb-resizer{opacity:.7}
+
+/* ---- Trang chủ ---- */
+html.tech body .welcome-row h1{color:#fff;text-shadow:0 0 28px #5fd0ff33}
+html.tech body .welcome-row p,html.tech body .eyebrow{color:#95b3cb}
+html.tech body .eyebrow b{color:#4b7391}
+html.tech body .home-greeting-text{background:linear-gradient(100deg,#8fdcff,#7fe3d6 60%,#b6f0ff);-webkit-background-clip:text;background-clip:text}
+html.tech body .home-greeting-ico{background:#ffffff14;border-color:#8fc4ee33;box-shadow:0 0 24px #5fd0ff33}
+html.tech body .hero-panel{position:relative;background:linear-gradient(115deg,#0a2a4d 0%,#0b4673 58%,#0a7f86 135%);box-shadow:0 0 0 1px #8fc4ee2e,0 24px 60px #0009}
+html.tech .hero-net{display:block;position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.9}
+html.tech body .hero-content{position:relative;z-index:1}
+html.tech body .hero-art{z-index:1}
+html.tech body .metric-card{background:linear-gradient(165deg,#0f2b4acf,#0a1f38e6);border-color:#8fc4ee26;box-shadow:var(--sh-1)}
+html.tech body .metric-card:hover{border-color:#5fd0ff77;box-shadow:0 0 0 1px #5fd0ff33,var(--sh-2)}
+html.tech body .metric-label{color:#c5dcee}
+html.tech body .metric-card>strong{color:#fff;text-shadow:0 0 22px #5fd0ff55}
+html.tech body .metric-card .metric-status{color:#3ee6a8;text-shadow:0 0 18px #3ee6a855}
+html.tech body .metric-bottom{color:#93b1c9}
+html.tech body .metric-icon{background:#5fd0ff1c;color:#7fd3ff}
+html.tech body .metric-teal .metric-icon{background:#7fe3d61f;color:#7fe3d6}
+html.tech body .metric-rose .metric-icon{background:#ff7aa81f;color:#ff9dbd}
+html.tech body .metric-violet .metric-icon{background:#9d8cff22;color:#b5a9ff}
+html.tech body .metric-amber .metric-icon{background:#ffc25a1f;color:#ffd07a}
+html.tech body .metric-icon svg{color:inherit;stroke:currentColor}
+html.tech .qa-head h2,html.tech .m-lists h2{color:#fff}
+html.tech .qa-head p{color:#95b3cb}
+html.tech .qa-chip{background:#0f2b4acc;border-color:#8fc4ee2e;color:#e1effa;box-shadow:none}
+html.tech .qa-chip:hover{border-color:#5fd0ff88;box-shadow:0 0 0 3px #5fd0ff1f}
+html.tech .qa-ico{background:#5fd0ff1f;color:#7fd3ff}
+html.tech .qa-ico.qa-teal{background:#7fe3d61f;color:#7fe3d6}html.tech .qa-ico.qa-violet{background:#9d8cff22;color:#b5a9ff}html.tech .qa-ico.qa-amber{background:#ffc25a1f;color:#ffd07a}html.tech .qa-ico.qa-rose{background:#ff7aa81f;color:#ff9dbd}html.tech .qa-ico.qa-sky{background:#5fd0ff1f;color:#7fd3ff}
+html.tech .recent-fold{background:#0c2342cc;border-color:#8fc4ee24;box-shadow:none}
+html.tech .recent-fold>summary{color:#e1effa}
+html.tech .recent-fold>summary b{background:#5fd0ff22;color:#bfeaff}
+html.tech .recent-fold>summary::after{border-color:#a9cde4}
+html.tech .recent-list a,html.tech .recent-fold .recent-list a{background:#ffffff0a;border-color:#8fc4ee22;box-shadow:none;color:#e1effa}
+html.tech .recent-list a:hover{border-color:#5fd0ff66}
+html.tech .recent-copy small,html.tech .recent-list time{color:#95b3cb}
+html.tech .doc-type-mini{background:#5fd0ff1f;color:#8fd8ff}
+html.tech .doc-type-mini.docx{background:#6d8cff26;color:#a3b8ff}html.tech .doc-type-mini.xlsx{background:#3ee6a822;color:#7ff0c4}html.tech .doc-type-mini.pdf{background:#ff6a5a26;color:#ff9f94}
+
+/* ---- Thư viện hồ sơ ---- */
+html.tech body .library-section{background:linear-gradient(165deg,#0c2342cc,#091c34d9);border-color:#8fc4ee24;box-shadow:var(--sh-1)}
+html.tech body .section-heading h2{color:#fff}
+html.tech body .section-heading p,html.tech body .library-footer,html.tech body .app-footer{color:#95b3cb}
+html.tech body .section-count{background:#5fd0ff22;color:#bfeaff}
+html.tech body .search-box{background:#ffffff0d;border-color:#8fc4ee33;color:#95b3cb}
+html.tech body .search-box:focus-within{background:#ffffff14;border-color:#5fd0ff;box-shadow:0 0 0 4px #5fd0ff26}
+html.tech body .search-box input{color:#f2f9ff;background:transparent}
+html.tech body .search-box input::placeholder{color:#7f9fb8}
+html.tech body .library-tools select,html.tech body select{background-color:#0d2748;border-color:#8fc4ee33;color:#d4e8f6}
+html.tech body .folder-card{background:linear-gradient(165deg,#0f2b4acc,#0a1f38d9);border-color:#8fc4ee24;box-shadow:none}
+html.tech body .folder-card:hover{border-color:#5fd0ff77;box-shadow:0 0 0 1px #5fd0ff33,var(--sh-2)}
+html.tech body .folder-copy strong{color:#fff}
+html.tech body .folder-copy small{color:#95b3cb}
+html.tech body .folder-arrow{color:#6f94b3}
+html.tech body .document-group-heading{border-bottom-color:#8fc4ee22}
+html.tech body .document-group-heading h3{color:#fff}
+html.tech body .document-group-heading span{background:#ffffff10;color:#c5dcee}
+html.tech body .document-card{background:linear-gradient(165deg,#0f2b4ab8,#0a1f38cc);border-color:#8fc4ee22;box-shadow:none}
+html.tech body .document-card:hover{border-color:#5fd0ff77;box-shadow:0 0 0 1px #5fd0ff33,var(--sh-2)}
+html.tech body .document-card h3,html.tech body .doc-title-link{color:#eaf4ff}
+html.tech body .doc-title-link:hover{color:#7fd3ff}
+html.tech body .doc-category,html.tech body .doc-meta,html.tech body .doc-extension{color:#95b3cb}
+html.tech body .doc-card-footer{border-top-color:#8fc4ee1f}
+html.tech body .doc-actions a{background:#ffffff0d;border-color:#8fc4ee2e;color:#c5dcee}
+html.tech body .doc-actions a:hover{background:#5fd0ff22;color:#fff;border-color:#5fd0ff88}
+html.tech body .doc-menu,html.tech body .doc-card-top button{color:#95b3cb}
+html.tech body .library-footer b{color:#fff}
+html.tech body .loading-state,html.tech body .empty-state{color:#95b3cb}
+html.tech body .empty-state strong{color:#fff}
+html.tech body .install-btn{background:#ffffff0d;border-color:#8fc4ee33;color:#d4e8f6}
+
+/* ---- Điện thoại: thanh dưới, tìm kiếm, bảng Thêm, danh sách ---- */
+@media(max-width:950px){
+ html.tech .mnav{background:#071a33ee;border-top-color:#8fc4ee24;box-shadow:0 -10px 30px #0008}
+ html.tech .mnav a,html.tech .mnav button{color:#95b3cb}
+ html.tech .mnav a.on,html.tech .mnav .mnav-more.on{background:#5fd0ff22;color:#bfeaff}
+ html.tech .mnav .mnav-search{color:#bfeaff}
+ html.tech .mnav .mnav-search>span{box-shadow:0 8px 22px #1b86f088,0 0 0 5px #06142a}
+ html.tech .m-searchbar{background:#0f2b4acc;border-color:#8fc4ee33;color:#95b3cb;box-shadow:none}
+ html.tech .m-searchbar svg{stroke:#7fd3ff}
+ html.tech .m-list a{background:#0f2b4acc;border-color:#8fc4ee24;box-shadow:none;color:#eaf4ff}
+ html.tech .ms{background:#071a33}
+ html.tech .ms-back{color:#c5dcee}
+ html.tech .ms-field{background:#0f2b4acc;border-color:#5fd0ff;color:#95b3cb;box-shadow:0 0 0 4px #5fd0ff22}
+ html.tech .ms-field input{color:#f2f9ff}
+ html.tech .ms-clear{background:#ffffff1a;color:#d4e8f6}
+ html.tech .ms-filters{border-bottom-color:#8fc4ee22}
+ html.tech .ms-chip{background:#ffffff0d;border-color:#8fc4ee33;color:#c5dcee}
+ html.tech .ms-chip.on{background:linear-gradient(120deg,#1b86f0,#0fb9b1);border-color:transparent;color:#fff}
+ html.tech .ms-body h3,html.tech .ms-hint,html.tech .ms-empty{color:#95b3cb}
+ html.tech .ms-count{color:#c5dcee}
+ html.tech .ms-empty strong{color:#fff}
+ html.tech .ms-item{border-bottom-color:#8fc4ee1c;color:#eaf4ff}
+ html.tech .ms-item:active{background:#ffffff10}
+ html.tech .ms-copy small{color:#95b3cb}
+ html.tech .ms-more{background:#ffffff0d;border-color:#8fc4ee33;color:#bfeaff}
+ html.tech .msheet-back{background:rgba(2,9,20,.66)}
+ html.tech .msheet{background:#0b2142;box-shadow:0 -16px 50px #000a;border-top:1px solid #8fc4ee2e}
+ html.tech .msheet-grab i{background:#3a6188}
+ html.tech .msheet h2{color:#fff}
+ html.tech .msheet-item{background:#ffffff0a;border-color:#8fc4ee24;color:#eaf4ff}
+ html.tech .msheet-item:active{background:#ffffff14}
+ html.tech .msheet-ico{background:#5fd0ff1f;color:#7fd3ff}
+ html.tech .t-amber .msheet-ico{background:#ffc25a1f;color:#ffd07a}html.tech .t-rose .msheet-ico{background:#ff7aa81f;color:#ff9dbd}html.tech .t-sky .msheet-ico{background:#5fd0ff1f;color:#7fd3ff}html.tech .t-violet .msheet-ico{background:#9d8cff22;color:#b5a9ff}
+ html.tech .msheet-copy small{color:#95b3cb}
+ html.tech .msheet-foot{border-top-color:#8fc4ee22}
+ html.tech .msheet-foot .theme-toggle{background:#ffffff0d}
+ html.tech .nav-scrim{background:rgba(2,9,20,.66)}
+}
+@media(max-width:700px){
+ html.tech body .document-grid{background:#0b2142cc;border-color:#8fc4ee24}
+ html.tech body .document-card{background:transparent;border-bottom-color:#8fc4ee1c}
+ html.tech body .document-card:active{background:#ffffff10}
+ html.tech body .document-card .doc-actions a[download]{background:transparent}
+ html.tech body .document-card .doc-pin{color:#5f87a6}
+ html.tech body .document-card .doc-pin[aria-pressed="true"],html.tech .doc-pin-btn[aria-pressed="true"]{color:#ffc857}
+ html.tech body .viewer-head{background:#071a33}
+ html.tech body .viewer-head .actions{background:#071a33f2;border-top-color:#8fc4ee24}
+ html.tech .doc-pin-btn{background:#ffffff0d;border-color:#8fc4ee33;color:#6f94b3}
+}
+
+/* ---- Chấm điểm tiêu chí ---- */
+html.tech body .crit-table-wrap{background:#0b2142cc;border-color:#8fc4ee24}
+html.tech body .crit-table th{background:#0d284a;color:#c5dcee;border-bottom-color:#8fc4ee2b}
+html.tech body .crit-table td{color:#e1effa;border-bottom-color:#8fc4ee1a}
+html.tech body .crit-table td:first-child b{color:#fff}
+html.tech body .crit-table td:first-child span,html.tech body .crit-table small{color:#95b3cb}
+html.tech body .crit-table tbody tr:hover,html.tech body .crit-row-open{background:#5fd0ff14}
+html.tech body .crit-table tr.crit-total{background:#ffffff0a}
+html.tech body .crit-ok{color:#7ff0c4}html.tech body .crit-mid{color:#ffd07a}html.tech body .crit-bad{color:#ff9f94}
+html.tech body .crit-bar{background:#ffffff14}
+html.tech body .crit-item{background:#ffffff0a;border-color:#8fc4ee22}
+html.tech body .crit-title{color:#eaf4ff}
+html.tech body .crit-badge.crit-du{background:#3ee6a822;color:#7ff0c4}
+html.tech body .crit-badge.crit-mot-phan{background:#ffc25a22;color:#ffd07a}
+html.tech body .crit-badge.crit-thieu{background:#ff6a5a26;color:#ff9f94}
+html.tech body .crit-badge.crit-tai-cho{background:#ffffff14;color:#c5dcee}
+@media(max-width:700px){
+ html.tech body .crit-table tr{background:#0f2b4acc;border-color:#8fc4ee24;box-shadow:none}
+ html.tech body .crit-table tr:active{background:#12345c}
+ html.tech body .crit-table tr.crit-total{background:#ffffff0a}
+ html.tech body .crit-table td[data-label]::before{color:#95b3cb}
+ html.tech body .crit-detail{background:#071a33}
+ html.tech body .crit-detail .section-heading{background:#071a33f2;border-bottom-color:#8fc4ee22}
+}
+
+/* ---- Sao lưu & đồng bộ ---- */
+html.tech body .backup-card{background:linear-gradient(165deg,#0c2342cc,#091c34d9);border-color:#8fc4ee24;box-shadow:var(--sh-1)}
+html.tech body .backup-card h3,html.tech body .viewer-head strong{color:#fff}
+html.tech body .backup-note{background:#ffc25a1c;border-color:#ffc25a55;color:#ffe0a8}
+html.tech body .backup-card code,html.tech body .backup-note code{background:#ffffff14;color:#cfeaff}
+html.tech body .viewer-head .meta,html.tech body .backup-card .meta{color:#95b3cb}
+html.tech body .backup-page .viewer-head{background:transparent;border-bottom-color:#8fc4ee22}
+
+/* ---- Giới thiệu & hướng dẫn ---- */
+html.tech .gt-toc{background:linear-gradient(#06142a 80%,#06142a00)}
+html.tech .gt-toc a{background:#ffffff0d;border-color:#8fc4ee2e;color:#c5dcee}
+html.tech .gt-toc a:hover{background:#5fd0ff1f;border-color:#5fd0ff88;color:#fff}
+html.tech .gt-section{background:linear-gradient(165deg,#0c2342cc,#091c34d9);border-color:#8fc4ee24;box-shadow:var(--sh-1)}
+html.tech .gt-head h2,html.tech .gt-feature h3,html.tech .gt-steps h3,html.tech .gt-roll h3,html.tech .gt-goals b{color:#fff}
+html.tech .gt-cols p,html.tech .gt-section p,html.tech .gt-goals li,html.tech .gt-table ul{color:#c5dcee}
+html.tech .gt-goals li,html.tech .gt-feature,html.tech .gt-steps li,html.tech .gt-roll li{background:#ffffff0a;border-color:#8fc4ee22}
+html.tech .gt-ico{background:#5fd0ff1f;color:#7fd3ff}
+html.tech .gt-table-wrap{border-color:#8fc4ee24}
+html.tech .gt-table thead th{background:#0d284a;color:#c5dcee;border-bottom-color:#8fc4ee2b}
+html.tech .gt-table tbody th{background:#5fd0ff14;color:#9fe0ff;border-bottom-color:#8fc4ee1a}
+html.tech .gt-table td{border-bottom-color:#8fc4ee1a}
+html.tech .gt-roll-no{color:#7fe3d6}
+html.tech details.gt-section>summary.gt-head::after{border-color:#a9cde4}
+
+/* ---- Xem / sửa tài liệu: khung ngoài tối, vùng soạn thảo giữ nền sáng ---- */
+html.tech body .main.document-detail{background:transparent}
+html.tech body .viewer{background:#0c2342cc;border-color:#8fc4ee24}
+html.tech body .edit-banner{background:#0d284a;color:#b5cfe3;border-color:#8fc4ee22}
+html.tech body .viewer-head h1,html.tech body .viewer-head h2{color:#fff}
+html.tech body .form-panel{background:#0c2342cc;border-color:#8fc4ee24;color:#c5dcee}
+html.tech body .form-panel h2,html.tech body .form-panel h3,html.tech body .form-panel label{color:#eaf4ff}
+html.tech body .form-panel textarea{background:#0a1f38;border-color:#8fc4ee33;color:#f2f9ff}
+
+@media print{html.tech body::before,html.tech body::after{display:none}}
+@media(prefers-reduced-motion:reduce){html.tech .hero-net{display:none}}
+
+/* ---- sửa sau kiểm thử v6 ---- */
+html.tech body .doc-type{background:#5fd0ff1f;color:#8fd8ff}
+html.tech body .doc-type::after{border-top-color:#0b2142}
+html.tech body .doc-type.docx{background:#6d8cff26;color:#a3b8ff}
+html.tech body .doc-type.xlsx{background:#3ee6a822;color:#7ff0c4}
+html.tech body .doc-type.pdf{background:#ff6a5a26;color:#ff9f94}
+html.tech body .doc-type.jpg,html.tech body .doc-type.png,html.tech body .doc-type.jpeg{background:#9d8cff22;color:#b5a9ff}
+html.tech body .folder-icon{background:#ff6a5a26;color:#ff9f94;box-shadow:inset 0 -3px #ff6a5a33}
+html.tech body .folder-bm .folder-icon{background:#3ee6a822;color:#7ff0c4;box-shadow:inset 0 -3px #3ee6a833}
+html.tech body .folder-sop-qt .folder-icon{background:#9d8cff22;color:#b5a9ff;box-shadow:inset 0 -3px #9d8cff33}
+html.tech body .folder-tai-lieu-khac .folder-icon{background:#5fd0ff22;color:#8fd8ff;box-shadow:inset 0 -3px #5fd0ff33}
+@media(max-width:700px){
+ body .header-right .theme-toggle{display:none}
+ body .brand-text strong{white-space:nowrap;font-size:15.5px}
+}
